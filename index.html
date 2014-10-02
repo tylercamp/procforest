@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style type="text/css">
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+        }
+
+        html {
+            height: 100%;
+            font-size: 0.75em;
+        }
+
+        body {
+            min-height: 100%;
+        }
+
+        canvas {
+            margin: auto;
+            position: absolute;
+
+            left: 0; right: 0;
+            top: 0; bottom: 0;
+        }
+
+        #gui {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.5);
+
+            padding: 10px;
+            border-radius: 5px;
+
+            min-width: 15%;
+        }
+
+        #loading-pane {
+            margin: auto;
+            position: absolute;
+            width: 50%;
+            height: 25%;
+
+            font-size: 3em;
+            padding: 0.5em;
+            text-align: center;
+
+            border: 1px solid gray;
+
+            border-radius: 2.5em;
+            background-color: rgba(127, 127, 127, 0.5);
+            z-index: 1;
+
+            left: 0; right: 0;
+            top: 0; bottom: 0;
+        }
+
+        table {
+            margin-top: 2em;
+        }
+
+        thead td {
+            border-bottom: 1px solid #333;
+        }
+
+        td {
+            padding-right: 2em;
+        }
+    </style>
+</head>
+<body>
+    <div id="gui">
+        Camera<br>
+        Position: [x: <span id="cam-x"></span>, y: <span id="cam-y"></span>, z: <span id="cam-z"></span>]<br>
+        Rotation: [x: <span id="cam-rot-x"></span>, y: <span id="cam-rot-y"></span>]<br>
+        <br>
+        Terrain Triangles: <span id="terrain-triangle-count"></span><br>
+        Terrain Chunk Index: <span id="terrain-chunk-index"></span><br>
+        <br>
+        Display Resolution: <span id="res-x"></span>x<span id="res-y"></span><br>
+        <span id="fps">0</span> FPS<br>
+        <br>
+        Frame skipping (<span id="frame-skipping"></span>)<br>
+        <input type="range" min="0" max="5" id="frame-skipping-slider" /><br>
+        <table>
+            <thead><tr><td>WebGL Function</td><td>CPF</td><td>CPS</td></tr></thead>
+            <tr><td>gl.drawElements</td><td id="stats-draw-elements-pf"></td><td id="stats-draw-elements-ps"></td></tr>
+            <tr><td>gl.drawArrays</td><td id="stats-draw-arrays-pf"></td><td id="stats-draw-arrays-ps"></td></tr>
+            <tr><td>gl.bindTexture</td><td id="stats-bind-texture-pf"></td><td id="stats-bind-texture-ps"></td></tr>
+            <tr><td>gl.bindFramebuffer</td><td id="stats-bind-framebuffer-pf"></td><td id="stats-bind-framebuffer-ps"></td></tr>
+            <tr><td>gl.clear</td><td id="stats-clear-pf"></td><td id="stats-clear-ps"></td></tr>
+            <tr><td>gl.useProgram</td><td id="stats-use-program-pf"></td><td id="stats-use-program-ps"></td></tr>
+            <tr><td>gl.enableVAA</td><td id="stats-enable-vaa-pf"></td><td id="stats-enable-vaa-ps"></td></tr>
+            <tr><td>gl.disableVAA</td><td id="stats-disable-vaa-pf"></td><td id="stats-disable-vaa-ps"></td></tr>
+        </table>
+
+        <table>
+            <thead><tr><td>Resource Type</td><td># Created</td></tr></thead>
+            <tr><td>Textures</td><td id="stats-textures"></td></tr>
+            <tr><td>Framebuffers</td><td id="stats-framebuffers"></td></tr>
+            <tr><td>Shader Programs</td><td id="stats-programs"></td></tr>
+        </table>
+    </div>
+
+    <div id="loading-pane"></div>
+
+    <canvas id="target-canvas"></canvas>
+    <script src="lib/cuon-matrix.min.js"></script>
+    <script src="lib/jquery-2.1.1.min.js"></script>
+    <script src="lib/perlin.js"></script>
+
+    <script src="system/glHelpers.js"></script>
+    <script src="system/CameraController.js"></script>
+    <script src="system/InputControllers.js"></script>
+    <script src="system/TerrainController.js"></script>
+    <script src="system/TimeController.js"></script>
+    <script src="system/FullscreenQuad.js"></script>
+    <script src="system/Skybox.js"></script>
+    <script src="system/PerformanceMonitor.js"></script>
+    <script src="system/BufferCollection.js"></script>
+    <script src="system/tree/Forest.js"></script>
+    <script src="system/tree/Vegetation.js"></script>
+    <script src="system/tree/VegetationGenerator.js"></script>
+    <script src="system/Mesh.js"></script>
+
+    <script src="system/Blur.js"></script>
+
+    <script src="effects/texture-passthrough.effect.js"></script>
+
+    <script src="Utility.js"></script>
+    <script src="ProgramFlow.js"></script>
+
+    <script>
+
+        var loadingWindowId = '#loading-pane';
+
+        function SetLoadingStatus(loadingText) {
+            $(loadingWindowId).text(loadingText);
+        }
+
+        function hideLoadingWindow() {
+            $(loadingWindowId).css('display', 'none');
+        }
+
+        function RunInitialization(initInstructions) {
+            var i = 0;
+
+            function runInitObject(initObject) {
+
+                SetLoadingStatus(initObject.initText);
+
+                setTimeout(function() {
+                    if (initObject.initFunc() === false)
+                        return;
+
+                    if (i < initInstructions.length) {
+                        runInitObject(initInstructions[i++]);
+                    }
+
+                }, 1);
+            }
+
+            runInitObject(initInstructions[i++]);
+        }
+
+        window.Controllers = {
+            mouse: null,
+            keyboard: null,
+            camera: null,
+            terrain: null,
+            time: null,
+            render: null,
+            bufferSource: new BufferCollection(),
+            forest: null,
+            vegetation: null,
+            performance: null
+        };
+
+        (function() {
+
+            SetLoadingStatus("Acquiring resources...");
+
+            glHelper.pollResources(initApp, {
+                skyboxVertexShader: 'resources/shaders/skybox-vertex.glsl',
+                skyboxFragmentShader: 'resources/shaders/skybox-fragment.glsl',
+
+                terrainVertexShader: 'resources/shaders/terrain-vertex.glsl',
+                terrainFragmentShader: 'resources/shaders/terrain-fragment.glsl',
+
+                coloredGeomVertexShader: 'resources/shaders/coloredgeometry-vertex.glsl',
+                coloredGeomFragmentShader: 'resources/shaders/coloredgeometry-fragment.glsl',
+
+                ppVertexShader: 'resources/shaders/postprocessing-vertex.glsl',
+                pp_Toon: 'resources/shaders/pp-toon.glsl',
+                pp_Bloom: 'resources/shaders/pp-bloom.glsl',
+                pp_Passthrough: 'resources/shaders/pp-passthrough.glsl',
+
+                grassImage: "resources/grassgreentexture0005.jpg",
+
+                blur_HorizontalVertexShader: "resources/shaders/blur-h-vertex.glsl",
+                blur_VerticalVertexShader: "resources/shaders/blur-v-vertex.glsl",
+                blur_FragmentShader: "resources/shaders/blur-fragment.glsl",
+
+                //skyboxImage: "resources/skybox_texture.jpg",
+
+                //  Resources listed in order of skybox texture listing
+//                skybox_Front: 'resources/skybox/hills_ft.jpg',
+//                skybox_Left: 'resources/skybox/hills_lf.jpg',
+//                skybox_Right: 'resources/skybox/hills_rt.jpg',
+//                skybox_Top: 'resources/skybox/hills_up.jpg',
+//                skybox_Back: 'resources/skybox/hills_bk.jpg'
+
+//                skybox_Front: 'resources/skybox/miramar_ft.jpg',
+//                skybox_Left: 'resources/skybox/miramar_lf.jpg',
+//                skybox_Right: 'resources/skybox/miramar_rt.jpg',
+//                skybox_Top: 'resources/skybox/miramar_up.jpg',
+//                skybox_Back: 'resources/skybox/miramar_bk.jpg',
+//                skybox_Bottom: 'resources/skybox/miramar_dn.jpg'
+
+                skybox_Front: 'resources/skybox/TropicalSunnyDayFront2048.jpg',
+                skybox_Left: 'resources/skybox/TropicalSunnyDayLeft2048.jpg',
+                skybox_Right: 'resources/skybox/TropicalSunnyDayRight2048.jpg',
+                skybox_Top: 'resources/skybox/TropicalSunnyDayUp2048.jpg',
+                skybox_Back: 'resources/skybox/TropicalSunnyDayBack2048.jpg',
+                skybox_Bottom: 'resources/skybox/TropicalSunnyDayDown2048.jpg'
+            });
+
+
+            function initApp(resources) {
+
+                var renderResources = {};
+                var options = {
+                    frameSkip: 1,
+                    backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 }
+                };
+                var gl;
+
+                RunInitialization([
+                    {
+                        initText: 'Preparing resources',
+                        initFunc: function() {
+                            gl = ProgramFlow.InitializeWebGL(resources, renderResources);
+                            if (!gl)
+                                return false;
+
+                            /* Initialize UI */
+                            $('#frame-skipping').text(options.frameSkip);
+                            $('#frame-skipping-slider').val(options.frameSkip);
+                            $('#frame-skipping-slider').change(function (e) {
+                                options.frameSkip = parseInt(e.target.value);
+                                $('#frame-skipping').text(e.target.value);
+                            });
+                        }
+                    },
+
+                    {
+                        initText: 'Generating terrain',
+                        initFunc: function() {
+                            ProgramFlow.GenerateTerrain(renderResources);
+                            $('#terrain-triangle-count').text(Utility.numberWithCommas(renderResources.currentTerrain.numTerrainTriangles().toString()));
+                        }
+                    },
+
+                    {
+                        initFunc: function() {
+                            hideLoadingWindow();
+                            Controllers.performance.beginMonitoring();
+                            runApp(gl, renderFunc, options, renderResources, 0);
+                        }
+                    }
+                ]);
+            }
+
+            var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+            function runApp(gl, renderFunc, options, resources, frameIndex) {
+                requestAnimationFrame(function () {
+                    if (frameIndex % (options.frameSkip + 1) === 0) {
+                        Controllers.time.markNewFrame();
+                        renderFunc(gl, resources, options);
+                    }
+
+                    runApp(gl, renderFunc, options, resources, frameIndex + 1);
+                });
+            }
+
+            function renderFunc(gl, resources, options)  {
+                var backgroundColor = options.backgroundColor;
+
+                ProgramFlow.UpdateCamera(resources);
+                ProgramFlow.UpdateUI(resources);
+
+                /* Prepare for rendering */
+                var camera = Controllers.camera;
+                resources.modelViewMatrix.setIdentity();
+                resources.modelViewMatrix.rotate(camera.rotation.x, 1, 0, 0);
+                resources.modelViewMatrix.rotate(camera.rotation.y, 0, 1, 0);
+                resources.modelViewMatrix.translate(-camera.x, -camera.y, -camera.z);
+
+
+                if (window.t === undefined) {
+                    t = false;
+                    Controllers.keyboard.onKey('T', function() {
+                        t = !t;
+                    });
+                }
+
+
+
+                var screenWidth = resources.screen.width, screenHeight = resources.screen.height;
+                var bloomSizeFactor = 0.25;
+                var bloomWidth = Math.ceil(screenWidth * bloomSizeFactor), bloomHeight = Math.ceil(screenHeight * bloomSizeFactor);
+
+                var screenBuffer = Controllers.bufferSource.getBuffer(gl, screenWidth, screenHeight, "ScreenBuffer");
+                var bloomBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight);
+
+
+
+                //  Clear screen-buffer
+                gl.clearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+                { // Render base screen contents
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, screenBuffer.fbo);
+
+                    gl.clearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+                    ProgramFlow.RenderAll(gl, resources);
+
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+                    //  Render texture to screen
+                    Effect.TexturePassthrough.bind(gl, screenBuffer.renderTexture);
+                    FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params);
+                }
+
+                { //  Store emissive components in renderbuffer
+                    gl.depthFunc(gl.LEQUAL);
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, screenBuffer.fbo);
+
+                    gl.clearColor(0, 0, 0, 0);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+
+                    ProgramFlow.RenderEmissive(gl, resources);
+
+                    gl.depthFunc(gl.LESS);
+                }
+
+                { // Re-render the rasterized emissive components into a smaller framebuffer
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, bloomBuffer.fbo);
+                    gl.viewport(0, 0, bloomWidth, bloomHeight);
+
+                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+                    Effect.TexturePassthrough.bind(gl, screenBuffer.renderTexture);
+                    FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params);
+                }
+
+                { // Render blurred version of emissive components
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                    gl.viewport(0, 0, screenWidth, screenHeight);
+
+                    gl.blendFunc(gl.ONE, gl.ONE);
+                    if (!t)
+                        Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
+                    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                }
+            }
+        })();
+    </script>
+</body>
+</html>
