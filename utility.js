@@ -63,6 +63,18 @@
 
 
 
+    Math.vecLerp = function lerpVectors(normal, v1, v2) {
+        normal = Math.clamp(normal, 0, 1);
+        var normal_i = 1 - normal;
+        return {
+            x: v1.x * normal_i + v2.x * normal,
+            y: v1.y * normal_i + v2.y * normal,
+            z: v1.z * normal_i + v2.z * normal
+        };
+    };
+
+
+
     window.Utility = {};
 
     //  http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript

@@ -36,6 +36,10 @@
     }
 
     Mesh.prototype.build = function buildBuffers(gl) {
+
+        this.vertexDescriptor.primitive = this.vertexDescriptor.primitive || gl.TRIANGLES;
+
+        //  Build buffers
         if (this.vertices.length)
             this._drawBuffers.vertices = buildBuffer(gl, this._drawBuffers.vertices, new Float32Array(this.vertices));
 
@@ -48,6 +52,7 @@
         if (this.colors.length)
             this._drawBuffers.colors = buildBuffer(gl, this._drawBuffers.colors, new Float32Array(this.colors));
 
+        //  Build textures (for images not yet converted)
         var i;
         for (i = 0; i < this.textures.length; i++) {
             if (this.textures[i] instanceof Image) {
@@ -69,7 +74,7 @@
         this.vertices = descriptor.data;
 
         this.vertexDescriptor.stride = descriptor.stride || 3;
-        this.vertexDescriptor.primitive = descriptor.primitive || gl.TRIANGLES;
+        this.vertexDescriptor.primitive = descriptor.primitive; // Can't set default without gl...
 
         this._needsBuild = true;
     };

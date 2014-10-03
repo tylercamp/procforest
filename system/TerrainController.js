@@ -6,6 +6,15 @@
 
     "use strict";
 
+    function bilinearInterpolate(xnorm, ynorm, tl, tr, bl, br) {
+        var xnorm_1 = 1 - xnorm, ynorm_1 = 1 - ynorm;
+
+        return  tl * xnorm_1 * ynorm_1 +
+                tr * xnorm   * ynorm_1 +
+                bl * xnorm_1 * ynorm +
+                br * xnorm   * ynorm;
+    }
+
     window.TerrainController = (function() {
 
         function TerrainController(glContext) {
@@ -231,10 +240,7 @@
             var bl = this.rawData[cy * vertexWidth + fx];
             var br = this.rawData[cy * vertexWidth + cx];
 
-            return  tl * (cx - x) * (cy - y) +
-                tr * (x - fx) * (cy - y) +
-                bl * (cx - x) * (y - fy) +
-                br * (x - fx) * (y - fy);
+            return bilinearInterpolate(x - fx, y - fy, tl, tr, bl, br);
         };
 
         TerrainChunk.prototype.setValue = function setValueAtVertexPosition(x, y, value) {
@@ -298,6 +304,9 @@
                 averageNormal.y += normals[i].y;
                 averageNormal.z += normals[i].z;
             }
+
+            //  For whatever reason the x is negative? Reverse that
+            averageNormal.x = -averageNormal.x;
 
             return Math.normal(averageNormal);
         };
@@ -433,8 +442,8 @@
             this._gl = gl;
         }
 
-        TerrainObject.prototype.resetToSize = function clearInternalBufferAndFillToSize(width, height, defaultValue) {
-            defaultValue = defaultValue || 0;
+        TerrainObject.prototype.resetToSize = function clearInternalBufferAndFillToSize(width, height, defaultValue_) {
+            defaultValue_ = defaultValue_ || 0;
 
             this._width = width;
             this._height = height;
@@ -451,7 +460,7 @@
                 for (x = 0; x < numChunks.x; x++) {
                     chunkWidth = Math.min(this._chunkSize, this._width - x * this._chunkSize);
                     chunkHeight = Math.min(this._chunkSize, this._height - y * this._chunkSize);
-                    chunk = new TerrainChunk(this._gl, chunkWidth, chunkHeight, defaultValue);
+                    chunk = new TerrainChunk(this._gl, chunkWidth, chunkHeight, defaultValue_);
                     this.chunks.push(chunk);
                 }
             }
@@ -482,6 +491,34 @@
             chunky = Math.clamp(chunky, 0, numChunks.y - 1);
 
             return this.chunks[chunky * numChunks.x + chunkx];
+        };
+
+        TerrainObject.prototype.getNormal = function getNormalForPosition(x, y) {
+            x /= this.scale.x;
+            y /= this.scale.z;
+
+            var fx, fy, cx, cy;
+            fx = Math.floor(x); fy = Math.floor(y);
+            cx = Math.ceil(x); cy = Math.ceil(y);
+
+            var tlchunk, trchunk, blchunk, brchunk;
+            tlchunk = this.getChunkForPosition(fx * this.scale.x, fy * this.scale.z);
+            trchunk = this.getChunkForPosition(cx * this.scale.x, fy * this.scale.z);
+            blchunk = this.getChunkForPosition(fx * this.scale.x, cy * this.scale.z);
+            brchunk = this.getChunkForPosition(cx * this.scale.x, cy * this.scale.z);
+
+            var tl, tr, bl, br, chunkSize = this._chunkSize;
+            tl = tlchunk.getNormal(fx - Math.floor(fx/chunkSize)*chunkSize, fy - Math.floor(fy/chunkSize)*chunkSize);
+            tr = trchunk.getNormal(cx - Math.floor(cx/chunkSize)*chunkSize, fy - Math.floor(fy/chunkSize)*chunkSize);
+            bl = blchunk.getNormal(fx - Math.floor(fx/chunkSize)*chunkSize, cy - Math.floor(cy/chunkSize)*chunkSize);
+            br = brchunk.getNormal(cx - Math.floor(cx/chunkSize)*chunkSize, cy - Math.floor(cy/chunkSize)*chunkSize);
+
+            var xmod = x % 1, ymod = y % 1;
+            return Math.normal({
+                x: bilinearInterpolate(xmod, ymod, tl.x, tr.x, bl.x, br.x),
+                y: bilinearInterpolate(xmod, ymod, tl.y, tr.y, bl.y, br.y),
+                z: bilinearInterpolate(xmod, ymod, tl.z, tr.z, bl.z, br.z)
+            });
         };
 
         TerrainObject.prototype.addValue = function addValueAtVertexPosition(x, y, value) {
@@ -538,6 +575,14 @@
             }
         };
 
+        TerrainObject.prototype.renderWidth = function getRenderWidth() {
+            return this._width * this.scale.x;
+        };
+
+        TerrainObject.prototype.renderHeight = function getRenderHeight() {
+            return this._height * this.scale.z;
+        };
+
         TerrainObject.prototype.width = function getWidth() {
             return this._width;
         };
@@ -588,6 +633,9 @@
         if (window.noise) {
             //  Only hook the Perlin generator if the library has been linked
             TerrainController.SimplexGenerator = SimplexGenerator;
+        }
+        else {
+            console.warn('perlin.js is missing, Simplex generation will be disabled');
         }
 
         return TerrainController;

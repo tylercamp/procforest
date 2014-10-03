@@ -141,7 +141,6 @@
             Controllers.time = new TimeController();
             Controllers.performance = new PerformanceMonitor(gl);
             Controllers.forest = new Forest();
-            Controllers.vegetation = new VegetationGenerator();
 
             Controllers.time.onFpsChange(function (newFps) {
                 $('#fps').text(newFps);
@@ -241,10 +240,12 @@
 
             renderResources.currentTerrain.update();
 
-            Controllers.forest.generate();
-
             Controllers.camera.x = renderResources.currentTerrain.width() * renderResources.currentTerrain.scale.x / 2;
             Controllers.camera.z = renderResources.currentTerrain.height() * renderResources.currentTerrain.scale.z / 2;
+        },
+
+        GrowForest: function growForest(renderResources, numTicks) {
+            Controllers.forest.generate(numTicks, renderResources.currentTerrain);
         },
 
         UpdateUI: function updateUI(resources) {
@@ -259,6 +260,11 @@
 
             var chunkIndex = resources.currentTerrain.chunks.indexOf(resources.currentTerrain.getChunkForPosition(camera.x, camera.z));
             $('#terrain-chunk-index').text(chunkIndex);
+
+            var terrainNormal = resources.currentTerrain.getNormal(camera.x, camera.z);
+            $('#terrain-norm-x').text(terrainNormal.x.toFixed(4));
+            $('#terrain-norm-y').text(terrainNormal.y.toFixed(4));
+            $('#terrain-norm-z').text(terrainNormal.z.toFixed(4));
         },
 
         UpdateCamera: function updateCamera(resources) {
@@ -287,7 +293,7 @@
             }
 
             var timeDelta = Controllers.time.getDelta();
-            var moveSpeed = 2 * timeDelta;
+            var moveSpeed = 5 * timeDelta;
             if (keyboard.checkKey('W'))
                 camera.moveForward(moveSpeed);
             if (keyboard.checkKey('A'))
@@ -401,8 +407,23 @@
 
         },
 
-        RenderTrees: function renderTrees(gl, resources) {
+        RenderForest: function renderForest(gl, resources) {
+            var forest = Controllers.forest;
 
+            var shader = resources.coloredGeometryShader;
+            var shaderParams = resources.coloredGeometryShaderParams;
+            var camera = Controllers.camera;
+
+            gl.useProgram(shader);
+
+            gl.uniformMatrix4fv(shaderParams.u_ModelViewMatrix, false, resources.modelViewMatrix.elements);
+            gl.uniformMatrix4fv(shaderParams.u_ProjectionMatrix, false, resources.projectionMatrix.elements);
+
+            var i, vegetationObject;
+            for (i = 0; i < forest.vegetationObjects.length; i++) {
+                vegetationObject = forest.vegetationObjects[i];
+                vegetationObject.drawStructure(gl, shaderParams);
+            }
         },
 
         RenderClouds: function renderClouds(gl, resources) {
@@ -415,9 +436,9 @@
             this.RenderSkybox(gl, resources);
             this.RenderTerrain(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
-            this.RenderLakes();
-            this.RenderTrees();
-            this.RenderClouds();
+            this.RenderLakes(gl, resources);
+            this.RenderForest(gl, resources);
+            this.RenderClouds(gl, resources);
         },
 
         RenderEmissive: function renderEmissiveElements(gl, resources) {

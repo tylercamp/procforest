@@ -44,11 +44,11 @@
         #loading-pane {
             margin: auto;
             position: absolute;
-            width: 50%;
-            height: 25%;
+            width: 35%;
+            height: 0; /* will be assigned to fit text */
 
             font-size: 3em;
-            padding: 0.5em;
+            padding: 1em;
             text-align: center;
 
             border: 1px solid gray;
@@ -59,6 +59,8 @@
 
             left: 0; right: 0;
             top: 0; bottom: 0;
+
+            overflow: hidden;
         }
 
         table {
@@ -75,6 +77,7 @@
     </style>
 </head>
 <body>
+    <!-- GUI Overlay -->
     <div id="gui">
         Camera<br>
         Position: [x: <span id="cam-x"></span>, y: <span id="cam-y"></span>, z: <span id="cam-z"></span>]<br>
@@ -82,6 +85,7 @@
         <br>
         Terrain Triangles: <span id="terrain-triangle-count"></span><br>
         Terrain Chunk Index: <span id="terrain-chunk-index"></span><br>
+        Terrain Normal: <span id="terrain-norm-x"></span>, <span id="terrain-norm-y"></span>, <span id="terrain-norm-z"></span>
         <br>
         Display Resolution: <span id="res-x"></span>x<span id="res-y"></span><br>
         <span id="fps">0</span> FPS<br>
@@ -108,13 +112,15 @@
         </table>
     </div>
 
-    <div id="loading-pane"></div>
-
+    <div id="loading-pane"><div id="loading-text"></div></div>
     <canvas id="target-canvas"></canvas>
+
+    <!-- Libraries -->
     <script src="lib/cuon-matrix.min.js"></script>
     <script src="lib/jquery-2.1.1.min.js"></script>
     <script src="lib/perlin.js"></script>
 
+    <!-- User-code -->
     <script src="system/glHelpers.js"></script>
     <script src="system/CameraController.js"></script>
     <script src="system/InputControllers.js"></script>
@@ -124,9 +130,11 @@
     <script src="system/Skybox.js"></script>
     <script src="system/PerformanceMonitor.js"></script>
     <script src="system/BufferCollection.js"></script>
+    <script src="system/Timeline.js"></script>
     <script src="system/tree/Forest.js"></script>
+    <script src="system/tree/GenerationSeeds.js"></script>
     <script src="system/tree/Vegetation.js"></script>
-    <script src="system/tree/VegetationGenerator.js"></script>
+    <script src="system/tree/Seed.js"></script>
     <script src="system/Mesh.js"></script>
 
     <script src="system/Blur.js"></script>
@@ -139,28 +147,39 @@
     <script>
 
         var loadingWindowId = '#loading-pane';
+        var loadingTextId = '#loading-text';
 
-        function SetLoadingStatus(loadingText) {
-            $(loadingWindowId).text(loadingText);
+        function setLoadingStatus(loadingText) {
+            $(loadingTextId).text(loadingText);
+            $(loadingWindowId).css({
+                height: $(loadingTextId).height()
+            });
         }
 
         function hideLoadingWindow() {
             $(loadingWindowId).css('display', 'none');
         }
 
-        function RunInitialization(initInstructions) {
+        //  Helper function
+        function RunInitializationSequence(initInstructions) {
             var i = 0;
+            var totalTime = 0;
 
             function runInitObject(initObject) {
 
-                SetLoadingStatus(initObject.initText);
+                setLoadingStatus(initObject.initText);
 
                 setTimeout(function() {
+                    var start = new Date();
                     if (initObject.initFunc() === false)
                         return;
 
+                    totalTime += (new Date()).valueOf() - start.valueOf();
                     if (i < initInstructions.length) {
                         runInitObject(initInstructions[i++]);
+                    }
+                    else {
+                        console.log('Total init time ' + totalTime / 1000 + 's');
                     }
 
                 }, 1);
@@ -178,13 +197,12 @@
             render: null,
             bufferSource: new BufferCollection(),
             forest: null,
-            vegetation: null,
             performance: null
         };
 
         (function() {
 
-            SetLoadingStatus("Acquiring resources...");
+            setLoadingStatus("Acquiring resources...");
 
             glHelper.pollResources(initApp, {
                 skyboxVertexShader: 'resources/shaders/skybox-vertex.glsl',
@@ -232,16 +250,22 @@
             });
 
 
+
+
+
+
+
             function initApp(resources) {
 
                 var renderResources = {};
                 var options = {
                     frameSkip: 1,
-                    backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 }
+                    backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 },
+                    numForestSimulationTicks: 10
                 };
                 var gl;
 
-                RunInitialization([
+                RunInitializationSequence([
                     {
                         initText: 'Preparing resources',
                         initFunc: function() {
@@ -268,6 +292,13 @@
                     },
 
                     {
+                        initText: 'Simulating forest growth',
+                        initFunc: function() {
+                            ProgramFlow.GrowForest(renderResources, options.numForestSimulationTicks);
+                        }
+                    },
+
+                    {
                         initFunc: function() {
                             hideLoadingWindow();
                             Controllers.performance.beginMonitoring();
@@ -276,6 +307,11 @@
                     }
                 ]);
             }
+
+
+
+
+
 
             var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
             function runApp(gl, renderFunc, options, resources, frameIndex) {
@@ -288,6 +324,12 @@
                     runApp(gl, renderFunc, options, resources, frameIndex + 1);
                 });
             }
+
+
+
+
+
+
 
             function renderFunc(gl, resources, options)  {
                 var backgroundColor = options.backgroundColor;
@@ -313,7 +355,7 @@
 
 
                 var screenWidth = resources.screen.width, screenHeight = resources.screen.height;
-                var bloomSizeFactor = 0.25;
+                var bloomSizeFactor = 0.5;
                 var bloomWidth = Math.ceil(screenWidth * bloomSizeFactor), bloomHeight = Math.ceil(screenHeight * bloomSizeFactor);
 
                 var screenBuffer = Controllers.bufferSource.getBuffer(gl, screenWidth, screenHeight, "ScreenBuffer");
