@@ -3,82 +3,11 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title></title>
-    <style type="text/css">
-
-        html, body {
-            margin: 0;
-            padding: 0;
-            background-color: #222;
-        }
-
-        html {
-            height: 100%;
-            font-size: 0.75em;
-        }
-
-        body {
-            min-height: 100%;
-        }
-
-        canvas {
-            margin: auto;
-            position: absolute;
-
-            left: 0; right: 0;
-            top: 0; bottom: 0;
-        }
-
-        #gui {
-            position: absolute;
-            left: 10px;
-            top: 10px;
-            z-index: 10;
-            background-color: rgba(255, 255, 255, 0.5);
-
-            padding: 10px;
-            border-radius: 5px;
-
-            min-width: 15%;
-        }
-
-        #loading-pane {
-            margin: auto;
-            position: absolute;
-            width: 35%;
-            height: 0; /* will be assigned to fit text */
-
-            font-size: 3em;
-            padding: 1em;
-            text-align: center;
-
-            border: 1px solid gray;
-
-            border-radius: 2.5em;
-            background-color: rgba(127, 127, 127, 0.5);
-            z-index: 1;
-
-            left: 0; right: 0;
-            top: 0; bottom: 0;
-
-            overflow: hidden;
-        }
-
-        table {
-            margin-top: 2em;
-        }
-
-        thead td {
-            border-bottom: 1px solid #333;
-        }
-
-        td {
-            padding-right: 2em;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css" >
 </head>
 <body>
     <!-- GUI Overlay -->
-    <div id="gui">
+    <div id="debug-gui" class="gui">
         Camera<br>
         Position: [x: <span id="cam-x"></span>, y: <span id="cam-y"></span>, z: <span id="cam-z"></span>]<br>
         Rotation: [x: <span id="cam-rot-x"></span>, y: <span id="cam-rot-y"></span>]<br>
@@ -112,6 +41,26 @@
         </table>
     </div>
 
+    <!-- Settings GUI -->
+    <div id="settings-gui" class="gui">
+        <h3>Settings</h3>
+        <label for="cbx-bloom">Bloom</label>
+        <input id="cbx-bloom" type="checkbox">
+        <br>
+        <br>
+
+        <label for="cbx-forest">Draw Forest</label>
+        <input id="cbx-forest" type="checkbox">
+        <br>
+
+        <label for="cbx-terrain">Draw Terrain</label>
+        <input id="cbx-terrain" type="checkbox">
+        <br>
+
+        <label for="cbx-skybox">Draw Skybox</label>
+        <input id="cbx-skybox" type="checkbox">
+    </div>
+
     <div id="loading-pane"><div id="loading-text"></div></div>
     <canvas id="target-canvas"></canvas>
 
@@ -131,10 +80,10 @@
     <script src="system/PerformanceMonitor.js"></script>
     <script src="system/BufferCollection.js"></script>
     <script src="system/Timeline.js"></script>
-    <script src="system/tree/Forest.js"></script>
-    <script src="system/tree/GenerationSeeds.js"></script>
-    <script src="system/tree/Vegetation.js"></script>
-    <script src="system/tree/Seed.js"></script>
+    <script src="system/forest/Forest.js"></script>
+    <script src="system/forest/GenerationSeeds.js"></script>
+    <script src="system/forest/Vegetation.js"></script>
+    <script src="system/forest/Seed.js"></script>
     <script src="system/Mesh.js"></script>
 
     <script src="system/Blur.js"></script>
@@ -143,6 +92,7 @@
 
     <script src="Utility.js"></script>
     <script src="ProgramFlow.js"></script>
+    <script src="Settings.js"></script>
 
     <script>
 
@@ -258,11 +208,6 @@
             function initApp(resources) {
 
                 var renderResources = {};
-                var options = {
-                    frameSkip: 1,
-                    backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 },
-                    numForestSimulationTicks: 10
-                };
                 var gl;
 
                 RunInitializationSequence([
@@ -273,13 +218,7 @@
                             if (!gl)
                                 return false;
 
-                            /* Initialize UI */
-                            $('#frame-skipping').text(options.frameSkip);
-                            $('#frame-skipping-slider').val(options.frameSkip);
-                            $('#frame-skipping-slider').change(function (e) {
-                                options.frameSkip = parseInt(e.target.value);
-                                $('#frame-skipping').text(e.target.value);
-                            });
+                            ProgramFlow.InitializeUI(gl, resources);
                         }
                     },
 
@@ -294,7 +233,7 @@
                     {
                         initText: 'Simulating forest growth',
                         initFunc: function() {
-                            ProgramFlow.GrowForest(renderResources, options.numForestSimulationTicks);
+                            ProgramFlow.GrowForest(renderResources, ProcForest.Settings.numForestSimulationTicks);
                         }
                     },
 
@@ -302,7 +241,12 @@
                         initFunc: function() {
                             hideLoadingWindow();
                             Controllers.performance.beginMonitoring();
-                            runApp(gl, renderFunc, options, renderResources, 0);
+
+                            Controllers.keyboard.onKey(' ', function() {
+                                Controllers.forest.timeline.tick();
+                            });
+
+                            runApp(gl, renderFunc, ProcForest.Settings, renderResources, 0);
                         }
                     }
                 ]);
@@ -345,14 +289,6 @@
                 resources.modelViewMatrix.translate(-camera.x, -camera.y, -camera.z);
 
 
-                if (window.t === undefined) {
-                    t = false;
-                    Controllers.keyboard.onKey('T', function() {
-                        t = !t;
-                    });
-                }
-
-
 
                 var screenWidth = resources.screen.width, screenHeight = resources.screen.height;
                 var bloomSizeFactor = 0.5;
@@ -382,36 +318,37 @@
                     FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params);
                 }
 
-                { //  Store emissive components in renderbuffer
-                    gl.depthFunc(gl.LEQUAL);
-                    gl.bindFramebuffer(gl.FRAMEBUFFER, screenBuffer.fbo);
+                if (ProcForest.Settings.useBloom) {
+                    { //  Store emissive components in renderbuffer
+                        gl.depthFunc(gl.LEQUAL);
+                        gl.bindFramebuffer(gl.FRAMEBUFFER, screenBuffer.fbo);
 
-                    gl.clearColor(0, 0, 0, 0);
-                    gl.clear(gl.COLOR_BUFFER_BIT);
+                        gl.clearColor(0, 0, 0, 0);
+                        gl.clear(gl.COLOR_BUFFER_BIT);
 
-                    ProgramFlow.RenderEmissive(gl, resources);
+                        ProgramFlow.RenderEmissive(gl, resources);
 
-                    gl.depthFunc(gl.LESS);
-                }
+                        gl.depthFunc(gl.LESS);
+                    }
 
-                { // Re-render the rasterized emissive components into a smaller framebuffer
-                    gl.bindFramebuffer(gl.FRAMEBUFFER, bloomBuffer.fbo);
-                    gl.viewport(0, 0, bloomWidth, bloomHeight);
+                    { // Re-render the rasterized emissive components into a smaller framebuffer
+                        gl.bindFramebuffer(gl.FRAMEBUFFER, bloomBuffer.fbo);
+                        gl.viewport(0, 0, bloomWidth, bloomHeight);
 
-                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-                    Effect.TexturePassthrough.bind(gl, screenBuffer.renderTexture);
-                    FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params);
-                }
+                        Effect.TexturePassthrough.bind(gl, screenBuffer.renderTexture);
+                        FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params);
+                    }
 
-                { // Render blurred version of emissive components
-                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                    gl.viewport(0, 0, screenWidth, screenHeight);
+                    { // Render blurred version of emissive components
+                        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                        gl.viewport(0, 0, screenWidth, screenHeight);
 
-                    gl.blendFunc(gl.ONE, gl.ONE);
-                    if (!t)
+                        gl.blendFunc(gl.ONE, gl.ONE);
                         Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
-                    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                    }
                 }
             }
         })();

@@ -73,6 +73,10 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, _repeatMode || gl.REPEAT);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, _repeatMode || gl.REPEAT);
 
+            if (gl.ext && gl.ext.TEXTURE_MAX_ANISOTROPY_EXT) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.ext.TEXTURE_MAX_ANISOTROPY_EXT, 4);
+            }
+
             return texture;
         },
 

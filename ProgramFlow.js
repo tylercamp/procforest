@@ -126,6 +126,12 @@
                 return;
             }
 
+            gl.ext = gl.getExtension("EXT_texture_filter_anisotropic") ||
+                     gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ||
+                     gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic");
+            if (gl.ext && gl.ext.TEXTURE_MAX_ANISOTROPY_EXT)
+                console.log('Anisotropic filtering enabled');
+
             $('#res-x').text(canvas.width);
             $('#res-y').text(canvas.height);
 
@@ -135,7 +141,7 @@
             };
 
             Controllers.mouse = new MouseController(canvas);
-            Controllers.keyboard = new KeyboardController(canvas);
+            Controllers.keyboard = new KeyboardController(window);
             Controllers.camera = new CameraController();
             Controllers.terrain = new TerrainController(gl);
             Controllers.time = new TimeController();
@@ -203,19 +209,54 @@
             return gl;
         },
 
+        InitializeUI: function initUI(gl, resources) {
+            $('#frame-skipping').text(ProcForest.Settings.frameSkip);
+            $('#frame-skipping-slider').val(ProcForest.Settings.frameSkip);
+            $('#frame-skipping-slider').change(function (e) {
+                ProcForest.Settings.frameSkip = parseInt(e.target.value);
+                $('#frame-skipping').text(e.target.value);
+            });
+
+            var $cbxBloom = $('#cbx-bloom');
+            var $cbxTerrain = $('#cbx-terrain');
+            var $cbxSkybox = $('#cbx-skybox');
+            var $cbxForest = $('#cbx-forest');
+
+            $cbxBloom.prop("checked", ProcForest.Settings.useBloom);
+            $cbxTerrain.prop("checked", ProcForest.Settings.drawTerrain);
+            $cbxForest.prop("checked", ProcForest.Settings.drawForest);
+            $cbxSkybox.prop("checked", ProcForest.Settings.drawSkybox);
+
+            $cbxBloom.click(function(e) {
+                ProcForest.Settings.useBloom = $cbxBloom.prop("checked");
+            });
+
+            $cbxTerrain.click(function(e) {
+                ProcForest.Settings.drawTerrain = $cbxTerrain.prop("checked");
+            });
+
+            $cbxForest.click(function(e) {
+                ProcForest.Settings.drawForest = $cbxForest.prop("checked");
+            });
+
+            $cbxSkybox.click(function(e) {
+                ProcForest.Settings.drawSkybox = $cbxSkybox.prop("checked");
+            });
+        },
+
         GenerateTerrain: function generateTerain(renderResources) {
             Controllers.terrain.generator = new TerrainController.BlankGenerator();
 
-            var terrainSize = 500;
+            var terrainSize = 150, scale = 3;
             var heightFactor = 0.7;
 
             var simplexGenerator = new TerrainController.SimplexGenerator(terrainSize * 0.1 * heightFactor);
 
             Utility.timedOp('Terrain generation', function() {
                 renderResources.currentTerrain = Controllers.terrain.createTerrain(terrainSize, terrainSize, {
-                    x: 1,
+                    x: scale,
                     y: 1,
-                    z: 1
+                    z: scale
                 });
 
                 //  Apply several layers of simplex noise
@@ -293,7 +334,7 @@
             }
 
             var timeDelta = Controllers.time.getDelta();
-            var moveSpeed = 5 * timeDelta;
+            var moveSpeed = (Math.max(cameraYOffset, -1) + 2) * timeDelta;
             if (keyboard.checkKey('W'))
                 camera.moveForward(moveSpeed);
             if (keyboard.checkKey('A'))
@@ -324,6 +365,9 @@
         },
 
         RenderTerrain: function renderTerrain(gl, resources) {
+            if (!ProcForest.Settings.drawTerrain)
+                return;
+
             gl.useProgram(resources.terrainShader);
 
             var terrain = resources.currentTerrain;
@@ -365,6 +409,9 @@
         },
 
         RenderSkybox: function renderSkybox(gl, resources) {
+            if (!ProcForest.Settings.drawSkybox)
+                return;
+
             //  Normal generation isn't right, don't care enough to do this correctly
             gl.disable(gl.CULL_FACE);
 
@@ -408,6 +455,9 @@
         },
 
         RenderForest: function renderForest(gl, resources) {
+            if (!ProcForest.Settings.drawForest)
+                return;
+
             var forest = Controllers.forest;
 
             var shader = resources.coloredGeometryShader;
@@ -419,11 +469,15 @@
             gl.uniformMatrix4fv(shaderParams.u_ModelViewMatrix, false, resources.modelViewMatrix.elements);
             gl.uniformMatrix4fv(shaderParams.u_ProjectionMatrix, false, resources.projectionMatrix.elements);
 
+            glHelper.enableAttribArrays(gl, resources.coloredGeometryShaderParams.attribArrays);
+
             var i, vegetationObject;
             for (i = 0; i < forest.vegetationObjects.length; i++) {
                 vegetationObject = forest.vegetationObjects[i];
-                vegetationObject.drawStructure(gl, shaderParams);
+                vegetationObject.drawStructure(gl, shaderParams, false);
             }
+
+            glHelper.disableAttribArrays(gl, resources.coloredGeometryShaderParams.attribArrays);
         },
 
         RenderClouds: function renderClouds(gl, resources) {

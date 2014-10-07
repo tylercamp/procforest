@@ -35,7 +35,8 @@
             this.target = target;
 
             //  assigning tabindex allows the element to be selectable/receive keyboard input
-            this.target.setAttribute("tabindex", '1');
+            if (this.target.setAttribute)
+                this.target.setAttribute("tabindex", '1');
 
             this.target.addEventListener('keydown', onKeyEvent.bind(this));
             this.target.addEventListener('keyup', onKeyEvent.bind(this));

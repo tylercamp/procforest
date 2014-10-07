@@ -1,0 +1,79 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #222;
+}
+
+html {
+    height: 100%;
+    font-size: 0.75em;
+}
+
+body {
+    min-height: 100%;
+}
+
+canvas {
+    margin: auto;
+    position: absolute;
+
+    left: 0; right: 0;
+    top: 0; bottom: 0;
+}
+
+.gui {
+    position: absolute;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.5);
+
+    padding: 10px;
+    border-radius: 5px;
+
+    min-width: 15%;
+}
+
+#debug-gui {
+    left: 10px;
+    top: 10px;
+}
+
+#settings-gui {
+    right: 10px;
+    top: 10px;
+
+    min-width: 10%;
+}
+
+#loading-pane {
+    margin: auto;
+    position: absolute;
+    width: 35%;
+    height: 0; /* will be assigned to fit text */
+
+    font-size: 3em;
+    padding: 1em;
+    text-align: center;
+
+    border: 1px solid gray;
+
+    border-radius: 2.5em;
+    background-color: rgba(127, 127, 127, 0.5);
+    z-index: 1;
+
+    left: 0; right: 0;
+    top: 0; bottom: 0;
+
+    overflow: hidden;
+}
+
+table {
+    margin-top: 2em;
+}
+
+thead td {
+    border-bottom: 1px solid #333;
+}
+
+td {
+    padding-right: 2em;
+}
