@@ -7,11 +7,12 @@
     "use strict";
 
     //  TODO: Incorrect, but works with the camera system
-    Math.fromSphericalCoordinate = function (rot, incline) {
+    Math.fromSphericalCoordinate = function (rot, incline, radius_) {
+        radius_ = radius_ || 1;
         return {
-            x: Math.cos(rot) * Math.cos(incline),
-            y: Math.sin(incline),
-            z: Math.sin(rot) * Math.cos(incline)
+            x: Math.cos(rot) * Math.cos(incline) * radius_,
+            y: Math.sin(incline) * radius_,
+            z: Math.sin(rot) * Math.cos(incline) * radius_
         };
     };
 
@@ -55,10 +56,23 @@
         vectorObject.z /= mag;
     };
 
+    Math.magnitude = function magnitudeOfVector(vectorObject) {
+        return Math.sqrt(vectorObject.x * vectorObject.x + vectorObject.y * vectorObject.y + vectorObject.z * vectorObject.z);
+    };
+
     Math.cross = function vectorCrossProduct(leftVecObject, rightVecObject) {
         return { x: leftVecObject.y * rightVecObject.z - leftVecObject.z * rightVecObject.y,
             y: leftVecObject.z * rightVecObject.x - leftVecObject.x * rightVecObject.z,
             z: leftVecObject.x * rightVecObject.y - leftVecObject.y * rightVecObject.x }
+    };
+
+    Math.vecOfLength = function(sourceVector, length) {
+        var conversionFactor = length / Math.magnitude(sourceVector);
+        return {
+            x: sourceVector.x * conversionFactor,
+            y: sourceVector.y * conversionFactor,
+            z: sourceVector.z * conversionFactor
+        };
     };
 
 
@@ -71,6 +85,36 @@
             y: v1.y * normal_i + v2.y * normal,
             z: v1.z * normal_i + v2.z * normal
         };
+    };
+
+    Math.vecModulate = function modulateVectorAngle(vector, azimuth, inclination) {
+        //  http://mathworld.wolfram.com/SphericalCoordinates.html
+        var length = Math.magnitude(vector);
+        var currentAzimuth, currentInclination;
+
+        //  May need to be z/x instead of x/z
+        currentAzimuth = Math.atan2(vector.z, vector.x);
+        currentInclination = Math.asin(vector.y / length);
+
+        return Math.fromSphericalCoordinate(currentAzimuth + azimuth, currentInclination + inclination, length);
+    };
+
+    //  Returns a vector with re-set azimuth/inclination for non-null angles
+    Math.vecModulateAbsolute = function setVectorAngle(vector, azimuth, inclination) {
+        //  http://mathworld.wolfram.com/SphericalCoordinates.html
+        var length = Math.magnitude(vector);
+        var currentAzimuth, currentInclination;
+
+        //  May need to be z/x instead of x/z
+        currentAzimuth = Math.atan2(vector.z, vector.x);
+        currentInclination = Math.asin(vector.y / length);
+
+        if (azimuth || azimuth === 0)
+            currentAzimuth = azimuth;
+        if (inclination || inclination === 0)
+            currentInclination = inclination;
+
+        return Math.fromSphericalCoordinate(currentAzimuth, currentInclination, length);
     };
 
 

@@ -513,6 +513,17 @@
             bl = blchunk.getNormal(fx - Math.floor(fx/chunkSize)*chunkSize, cy - Math.floor(cy/chunkSize)*chunkSize);
             br = brchunk.getNormal(cx - Math.floor(cx/chunkSize)*chunkSize, cy - Math.floor(cy/chunkSize)*chunkSize);
 
+            var scale_i = {
+                x: 1 / this.scale.x,
+                y: 1 / this.scale.y,
+                z: 1 / this.scale.z
+            };
+
+            tl.x *= scale_i.x; tl.y *= scale_i.y; tl.z *= scale_i.z;
+            tr.x *= scale_i.x; tr.y *= scale_i.y; tr.z *= scale_i.z;
+            bl.x *= scale_i.x; bl.y *= scale_i.y; bl.z *= scale_i.z;
+            br.x *= scale_i.x; br.y *= scale_i.y; br.z *= scale_i.z;
+
             var xmod = x % 1, ymod = y % 1;
             return Math.normal({
                 x: bilinearInterpolate(xmod, ymod, tl.x, tr.x, bl.x, br.x),

@@ -247,7 +247,7 @@
         GenerateTerrain: function generateTerain(renderResources) {
             Controllers.terrain.generator = new TerrainController.BlankGenerator();
 
-            var terrainSize = 150, scale = 3;
+            var terrainSize = ProcForest.Settings.terrainSize, scale = 3;
             var heightFactor = 0.7;
 
             var simplexGenerator = new TerrainController.SimplexGenerator(terrainSize * 0.1 * heightFactor);

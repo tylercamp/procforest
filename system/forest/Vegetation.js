@@ -7,27 +7,46 @@
     "use strict";
 
     function Segment() {
-        this.length = 0;
         this.baseOrientation = { x: 0, y: 0, z: 0 };
         this.parent = null;
         this.subdivisionIndex = -1;
 
         this.structure = [];
     }
+
+    Segment.prototype.calculateArcLength = function totalLengthOfStructure() {
+        var i, total = 0, current, next;
+        for (i = 0; i < this.structure.length - 1; i++) {
+            current = this.structure[i];
+            next = this.structure[i + 1];
+
+            total += Math.magnitude({
+                x: next.x - current.x,
+                y: next.y - current.y,
+                z: next.z - current.z
+            });
+        }
+
+        return total;
+    };
     
     function Vegetation() {
         this.meshes = [];
         this.seed = null;
         this.structureSegments = [];
 
+        //  A set of unique numbers from 0-1 to give this vegetation its own properties (used by the seed)
+        this.fingerprint = {
+            a: Math.random(),
+            b: Math.random(),
+            c: Math.random()
+        };
+
         this._structureMesh = null;
+        this._needsBuild = false;
     }
 
-    Vegetation.prototype.fitToTerrain = function (terrain) {
-
-    };
-
-    Vegetation.prototype.draw = function() {
+    Vegetation.prototype.draw = function(gl, shaderParams, autoAttribArrays_) {
 
     };
 
@@ -57,7 +76,9 @@
             colors.push(1);
         }
 
-        this._structureMesh = new Mesh();
+        if (!this._structureMesh)
+            this._structureMesh = new Mesh();
+
         this._structureMesh.setVertices({
             data: vertices,
             primitive: gl.LINES
@@ -67,33 +88,58 @@
             data: colors
         });
         this._structureMesh.build(gl);
+
+        this._needsBuild = false;
     };
 
-    Vegetation.prototype.grow = function grow() {
+    Vegetation.prototype.grow = function grow(terrain) {
         if (this.structureSegments.length === 0 || !this.seed) {
             console.error('Cannot grow vegetation without a base segment or seed, try creating vegetation using Forest.Seed.plant(...)');
         }
 
-        var i, segment, relativeChange, lastVertex;
+        var i, segment, relativeChange, lastVertex, nextToLastVertex, currentDirection;
         for (i = 0; i < this.structureSegments.length; i++) {
             segment = this.structureSegments[i];
-            relativeChange = this.seed.growth(segment, segment.baseOrientation); // NOTE: currentDirection should not be this.baseOrientation
             lastVertex = segment.structure[segment.structure.length - 1];
+
+            if (segment.structure.length > 1) {
+                nextToLastVertex = segment.structure[segment.structure.length - 2];
+                currentDirection = {
+                    x: lastVertex.x - nextToLastVertex.x,
+                    y: lastVertex.y - nextToLastVertex.y,
+                    z: lastVertex.z - nextToLastVertex.z
+                };
+            }
+            else {
+                currentDirection = segment.baseOrientation;
+            }
+
+            relativeChange = this.seed.growth(terrain, segment, this.fingerprint, currentDirection);
+            if (!relativeChange)
+                continue;
+
             segment.structure.push({
                 x: lastVertex.x + relativeChange.x,
                 y: lastVertex.y + relativeChange.y,
                 z: lastVertex.z + relativeChange.z
             });
         }
+
+        this._needsBuild = true;
     };
 
     //  For debugging
-    Vegetation.prototype.drawStructure = function(gl, shaderParams) {
-        if (!this._structureMesh)
+    Vegetation.prototype.drawStructure = function(gl, shaderParams, autoAttribArrays_) {
+        if (!this._structureMesh || this._needsBuild)
             this._generateStructureMesh(gl);
 
-        gl.enableVertexAttribArray(shaderParams.a_Vertex);
-        gl.enableVertexAttribArray(shaderParams.a_Color);
+        if (autoAttribArrays_ === undefined)
+            autoAttribArrays_ = true;
+
+        if (autoAttribArrays_) {
+            gl.enableVertexAttribArray(shaderParams.a_Vertex);
+            gl.enableVertexAttribArray(shaderParams.a_Color);
+        }
 
         var meshBuffers = this._structureMesh.getBuffers();
 
@@ -110,8 +156,10 @@
             gl.drawArrays(this._structureMesh.vertexDescriptor.primitive, 0, this._structureMesh.vertices.length / 3);
         }
 
-        gl.disableVertexAttribArray(shaderParams.a_Vertex);
-        gl.disableVertexAttribArray(shaderParams.a_Color);
+        if (autoAttribArrays_) {
+            gl.disableVertexAttribArray(shaderParams.a_Vertex);
+            gl.disableVertexAttribArray(shaderParams.a_Color);
+        }
     };
 
     window.Vegetation = Vegetation;

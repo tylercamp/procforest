@@ -17,9 +17,11 @@
         drawForest: true,
         drawTerrain: true,
 
-        frameSkip: 1,
+        terrainSize: 40,
+
+        frameSkip: 2,
         backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 },
-        numForestSimulationTicks: 1,
+        numForestSimulationTicks: 100,
 
         SeedProbabilities: {
             tree: 0,

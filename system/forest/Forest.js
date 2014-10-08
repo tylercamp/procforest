@@ -54,7 +54,9 @@
     }
 
     Forest.prototype.generate = function(numGrowthTicks, terrain) {
-        var timeline = new Timeline();
+        this.timeline = new Timeline();
+        this.vegetationObjects = [];
+
         var maxSeedsDistance = 30;
         var spread = { x: 0, y: 0 };
         var terrainWidth = terrain.renderWidth(), terrainHeight = terrain.renderHeight();
@@ -67,7 +69,7 @@
         console.log('seed-h', terrainHeight / spread.y);
 
         //  Spread initial seeds (don't put seeds on the edges of the terrain)
-        var vegetation, growData, vegetationObjects = this.vegetationObjects;
+        var vegetation, vegetationObjects = this.vegetationObjects;
         for (y = spread.y; y < terrainWidth - spread.y; y += spread.y) {
             for (x = spread.x; x < terrainHeight - spread.x; x += spread.x) {
                 vegetation = Forest.Seed.plant(x, terrain.getValue(x, y), y, terrain.getNormal(x, y), Seeds.pick());
@@ -78,14 +80,16 @@
         console.log('Planted ' + vegetationObjects.length + ' seeds in the forest');
 
         //  Configure timeline onTick
-        timeline.onTick(function (tick) {
+        this.timeline.onTick(function (tick) {
             //  Don't insert offspring until we're done processing
             var newVegetation = [];
 
             var i, vegetation, offspring;
             for (i = 0; i < vegetationObjects.length; i++) {
                 vegetation = vegetationObjects[i];
-                offspring = vegetation.grow();
+                //  Do the vegetation growth
+                offspring = vegetation.grow(terrain);
+                //  Add offspring to the forest if any were generated
                 if (offspring) {
                     newVegetation.push({
                         offspring: offspring,
@@ -101,7 +105,7 @@
 
 
         //  Simulate for numGrowthTicks
-        timeline.tick(numGrowthTicks);
+        this.timeline.tick(numGrowthTicks);
     };
 
     window.Forest = Forest;
