@@ -15,7 +15,11 @@
  *  Vegetation generation is done through a growing process; a Vegetation on its own contains render
  *      info but not information regarding how to develop the vegetation. A Seed object describes
  *      growth, population density requirements, and other information. When a vegetation object
- *      is grown it references the Seed from which it was created to determine how to grow.
+ *      is grown it references the Seed from which it was created to determine how to grow. If the
+ *      seed indicates no growth for a segment (returns null), the segment is said to be 'finalized'.
+ *      The .finalize() method within the seed is invoked with that segment as a parameter, for any
+ *      final operations that may be necessary (i.e. smoothing/texture generation.) Finalized segments
+ *      are skipped during growth processing.
  *
  *  When a Vegetation object is grown, there is a probability (depending on the seed) that it will
  *      produce offspring. The offspring should be inserted into the forest with proximity to its
@@ -70,8 +74,8 @@
 
         //  Spread initial seeds (don't put seeds on the edges of the terrain)
         var vegetation, vegetationObjects = this.vegetationObjects;
-        for (y = spread.y; y < terrainWidth - spread.y; y += spread.y) {
-            for (x = spread.x; x < terrainHeight - spread.x; x += spread.x) {
+        for (y = spread.y; y <= terrainWidth - spread.y; y += spread.y) {
+            for (x = spread.x; x <= terrainHeight - spread.x; x += spread.x) {
                 vegetation = Forest.Seed.plant(x, terrain.getValue(x, y), y, terrain.getNormal(x, y), Seeds.pick());
                 vegetationObjects.push(vegetation);
             }

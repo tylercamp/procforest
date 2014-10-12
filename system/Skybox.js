@@ -51,7 +51,7 @@
         this._glTexCoordBuffer = gl.createBuffer();
         this._glColorBuffer = gl.createBuffer();
 
-        this._fillBuffers(gl, 1000);
+        this._fillBuffers(gl, 10000);
     };
 
     SingleImageSkybox.prototype._fillBuffers = function insertVertexDataToBuffers(gl, cubeSize) {
@@ -227,7 +227,7 @@
     MultiImageSkybox.prototype.generateBuffers = function generateBuffersAndTextureObjects(gl) {
         var numTextures = this._textureImages.length;
         var i;
-        var vertexData = this._generateVertexBufferArrays(1000);
+        var vertexData = this._generateVertexBufferArrays(10000);
 
         this._glTextureObjects = new Array(numTextures);
         this._glVertexBuffers = new Array(numTextures);

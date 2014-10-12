@@ -314,6 +314,12 @@
         TerrainChunk.prototype.update = function updateBuffers(scale, chunkPosition) {
             var i, x, y, z, normal;
 
+            var scale_i = {
+                x: 1 / scale.x,
+                y: 1 / scale.y,
+                z: 1 / scale.z
+            };
+
             var rawVertices = new Array(this.rawData.length * 3);
             var rawColors = new Array(this.rawData.length * 3);
             var rawTexCoords = new Array(this.rawData.length * 2);
@@ -338,9 +344,9 @@
                 rawTexCoords[i*2 + 1] = z;
 
                 normal = this.getNormal(x, z);
-                rawNormals[i*3 + 0] = normal.x;
-                rawNormals[i*3 + 1] = normal.y;
-                rawNormals[i*3 + 2] = normal.z;
+                rawNormals[i*3 + 0] = normal.x * scale_i.x;
+                rawNormals[i*3 + 1] = normal.y * scale_i.y;
+                rawNormals[i*3 + 2] = normal.z * scale_i.z;
             }
 
             var rawIndices = new Array(this.numTerrainTriangles() * 3);

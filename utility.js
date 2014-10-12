@@ -66,6 +66,10 @@
             z: leftVecObject.x * rightVecObject.y - leftVecObject.y * rightVecObject.x }
     };
 
+    Math.dot = function vectorDotProduct(leftVecObject, rightVecObject) {
+        return leftVecObject.x * rightVecObject.x + leftVecObject.y * rightVecObject.y + leftVecObject.z * rightVecObject.z;
+    };
+
     Math.vecOfLength = function(sourceVector, length) {
         var conversionFactor = length / Math.magnitude(sourceVector);
         return {
@@ -92,20 +96,18 @@
         var length = Math.magnitude(vector);
         var currentAzimuth, currentInclination;
 
-        //  May need to be z/x instead of x/z
         currentAzimuth = Math.atan2(vector.z, vector.x);
         currentInclination = Math.asin(vector.y / length);
 
         return Math.fromSphericalCoordinate(currentAzimuth + azimuth, currentInclination + inclination, length);
     };
 
-    //  Returns a vector with re-set azimuth/inclination for non-null angles
+    //  Returns a vector with re-set azimuth/inclination for non-null angles (based on spherical coordinate calculations)
     Math.vecModulateAbsolute = function setVectorAngle(vector, azimuth, inclination) {
         //  http://mathworld.wolfram.com/SphericalCoordinates.html
         var length = Math.magnitude(vector);
         var currentAzimuth, currentInclination;
 
-        //  May need to be z/x instead of x/z
         currentAzimuth = Math.atan2(vector.z, vector.x);
         currentInclination = Math.asin(vector.y / length);
 
@@ -131,7 +133,7 @@
         var result = func();
         var end = (new Date()).valueOf();
 
-        console.log(label, (end - start) / 1000 + 's')
+        console.log(label, (end - start) / 1000 + 's');
 
         return result;
     }

@@ -15,6 +15,10 @@
                 return ProcForest.Settings.SeedProbabilities.tree;
             },
 
+            finalize: function(segment) {
+
+            },
+
             //  Returns vector indicating position for next point (relative to last point)
             growth: function(terrain, segment, fingerprint, currentDirection) {
                 //  segment.length
@@ -23,9 +27,9 @@
                 //  segment.subdivisionIndex
 
                 //  Make sure the direction is at an angle with the terrain
-                var currentDirectionMod = Math.vecModulateAbsolute(currentDirection, null, Math.pi/10);
+                var currentDirectionMod = Math.vecModulateAbsolute(currentDirection, null, Math.pi/3);
                 //  TWIRL BABY TWIRL
-                return Math.vecModulate(currentDirectionMod, Math.pi/20, 0);
+                return Math.vecModulate(currentDirectionMod, Math.pi/7, 0);
 
 //                return {
 //                    x: currentDirection.x + Math.random() - 0.5,
@@ -56,25 +60,38 @@
                 return ProcForest.Settings.SeedProbabilities.root;
             },
 
+            finalize: function(segment) {
+                //  Can't smooth with fewer than 3 points
+                if (segment.structure.length < 3)
+                    return;
+
+                //  100 degrees
+                var smallestAngle = 100 * Math.pi / 180;
+                var currentSmallestAngle, i = 0;
+                while ((currentSmallestAngle = segment.smallestSectionAngle()) < smallestAngle && i++ < 15) { // max of 15 iterations
+                    segment.smooth(0.05);
+                }
+            },
+
             growth: function(terrain, segment, fingerprint, currentDirection) {
                 var lengthRange = {
-                    max: 10,
-                    min: 2
+                    max: 15,
+                    min: 1
                 };
                 var maxLength = lengthRange.min + fingerprint.a * (lengthRange.max - lengthRange.min);
 
                 var heightRange = {
-                    max: 1,
-                    min: 0.25
+                    max: 2,
+                    min: 0.1
                 };
 
                 var maxGrowthAngularVariation = Math.pi * (1/4) * (fingerprint.a + fingerprint.b) / 2;
 
                 var currentLength = segment.calculateArcLength();
                 var lastPoint = segment.structure[segment.structure.length - 1];
+                var firstPoint = segment.structure[0];
                 var terrainHeightAtPoint = terrain.getValue(lastPoint.x, lastPoint.z);
                 if (lastPoint.y < terrainHeightAtPoint && currentLength > lengthRange.min) {
-                    //console.log('reached max length');
                     return null; // Don't grow anymore if we're already re-intersecting with the terrain
                 }
 
@@ -97,6 +114,13 @@
                                                             maxGrowthAngularVariation * Math.random(),
                                                             maxGrowthAngularVariation * Math.random()));
 
+                //  Make sure to move away from the root's starting position
+                if (lastPoint !== firstPoint) {
+                    naturalGrowth.x += 1 / (lastPoint.x - firstPoint.x) * directionalChangeFactor;
+                    naturalGrowth.y += 1 / (lastPoint.y - firstPoint.y) * directionalChangeFactor;
+                    Math.normalize(naturalGrowth);
+                }
+
                 naturalGrowth.x *= directionalChangeFactor;
                 naturalGrowth.y *= directionalChangeFactor;
                 naturalGrowth.z *= directionalChangeFactor;
@@ -109,10 +133,10 @@
                     z: naturalGrowth.z + sunPull*sunVector.z + gravityPull*gravityVector.z
                 };
 
-                result = Math.vecModulate(result, null, (maxHeight - lastPoint.y) * 2 * (1/Math.pi));
+                //  tilt the growth vector towards the max height of the vegetation
+                result = Math.vecModulate(result, null, (maxHeight - lastPoint.y) * 2 * (1/Math.pi) * fingerprint.c);
                 result = Math.vecOfLength(result, 0.75);
 
-                //console.log('overgrowth delta', result, Math.magnitude(result));
                 return result;
             },
 

@@ -10,6 +10,7 @@
         this.baseOrientation = { x: 0, y: 0, z: 0 };
         this.parent = null;
         this.subdivisionIndex = -1;
+        this.isFinalized = false;
 
         this.structure = [];
     }
@@ -28,6 +29,70 @@
         }
 
         return total;
+    };
+
+    //  Returns the sharpest angle within the segment (in radians)
+    Segment.prototype.smallestSectionAngle = function() {
+        var smallestAngle = Math.pi, currentAngle, i;
+        var previousVertex, currentVertex, nextVertex, b_a, b_c;
+        for (i = 1; i < this.structure.length - 1; i++) {
+            previousVertex = this.structure[i-1];
+            currentVertex = this.structure[i];
+            nextVertex = this.structure[i+1];
+
+            b_a = {
+                x: currentVertex.x - previousVertex.x,
+                y: currentVertex.y - previousVertex.y,
+                z: currentVertex.z - previousVertex.z
+            };
+
+            b_c = {
+                x: currentVertex.x - nextVertex.x,
+                y: currentVertex.y - nextVertex.y,
+                z: currentVertex.z - nextVertex.z
+            };
+
+            currentAngle = Math.acos(Math.dot(b_a, b_c));
+            if (currentAngle < smallestAngle)
+                smallestAngle = currentAngle;
+        }
+
+        return smallestAngle;
+    };
+
+    //  from 0 - 1, 0 being no change and 1 causing every vertex to be evenly averaged with its immediate neighbors
+    Segment.prototype.smooth = function smoothenStructureVertices(smoothFactor) {
+
+        var originalData = new Array(this.structure.length);
+        for (i = 0; i < this.structure.length; i++) {
+            originalData[i] = {
+                x: this.structure[i].x,
+                y: this.structure[i].y,
+                z: this.structure[i].z
+            };
+        }
+
+        var i, previous, current, next, smoothFactor_i;
+        smoothFactor_i = 1 / (1 + 2*smoothFactor);
+        smoothFactor = 1 - smoothFactor_i;
+        smoothFactor /= 2;
+        for (i = 1; i < this.structure.length - 1; i++) {
+            previous = originalData[i - 1];
+            current = this.structure[i];
+            next = originalData[i + 1];
+
+            current.x = current.x * smoothFactor_i +
+                        previous.x * smoothFactor +
+                        next.x * smoothFactor;
+
+            current.y = current.y * smoothFactor_i +
+                        previous.y * smoothFactor +
+                        next.y * smoothFactor;
+
+            current.z = current.z * smoothFactor_i +
+                        previous.z * smoothFactor +
+                        next.z * smoothFactor;
+        }
     };
     
     function Vegetation() {
@@ -100,6 +165,9 @@
         var i, segment, relativeChange, lastVertex, nextToLastVertex, currentDirection;
         for (i = 0; i < this.structureSegments.length; i++) {
             segment = this.structureSegments[i];
+            if (segment.isFinalized)
+                continue;
+
             lastVertex = segment.structure[segment.structure.length - 1];
 
             if (segment.structure.length > 1) {
@@ -115,8 +183,11 @@
             }
 
             relativeChange = this.seed.growth(terrain, segment, this.fingerprint, currentDirection);
-            if (!relativeChange)
+            if (!relativeChange) {
+                this.seed.finalize(segment);
+                segment.isFinalized = true;
                 continue;
+            }
 
             segment.structure.push({
                 x: lastVertex.x + relativeChange.x,
