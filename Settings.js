@@ -16,8 +16,9 @@
         drawSkybox: true,
         drawForest: true,
         drawTerrain: true,
+        drawParticles: true,
 
-        terrainSize: 400,
+        terrainSize: 50,
 
         frameSkip: 1,
         backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 },

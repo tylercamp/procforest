@@ -59,6 +59,10 @@
 
         <label for="cbx-skybox">Draw Skybox</label>
         <input id="cbx-skybox" type="checkbox">
+        <br>
+
+        <label for="cbx-particles">Draw Particles</label>
+        <input id="cbx-particles" type="checkbox">
     </div>
 
     <div id="loading-pane"><div id="loading-text"></div></div>
@@ -85,6 +89,7 @@
     <script src="system/forest/Vegetation.js"></script>
     <script src="system/forest/Seed.js"></script>
     <script src="system/Mesh.js"></script>
+    <script src="system/ParticleSystem.js"></script>
 
     <script src="system/Blur.js"></script>
 
@@ -147,7 +152,8 @@
             render: null,
             bufferSource: new BufferCollection(),
             forest: null,
-            performance: null
+            performance: null,
+            particleSystem: null
         };
 
         (function() {
@@ -163,6 +169,8 @@
 
                 coloredGeomVertexShader: 'resources/shaders/coloredgeometry-vertex.glsl',
                 coloredGeomFragmentShader: 'resources/shaders/coloredgeometry-fragment.glsl',
+                particleFragmentShader: 'resources/shaders/particle-fragment.glsl',
+                particleVertexShader: 'resources/shaders/particle-vertex.glsl',
 
                 ppVertexShader: 'resources/shaders/postprocessing-vertex.glsl',
                 pp_Toon: 'resources/shaders/pp-toon.glsl',

@@ -18,6 +18,7 @@
                 this.skyboxShader = glHelper.generateShader(gl, resources.skyboxVertexShader, resources.skyboxFragmentShader);
                 this.terrainShader = glHelper.generateShader(gl, resources.terrainVertexShader, resources.terrainFragmentShader);
                 this.coloredGeometryShader = glHelper.generateShader(gl, resources.coloredGeomVertexShader, resources.coloredGeomFragmentShader);
+                this.particleShader = glHelper.generateShader(gl, resources.particleVertexShader, resources.particleFragmentShader);
                 this.grassImage = glHelper.generateTextureObject(gl, resources.grassImage);
                 this.modelViewMatrix = new Matrix4();
                 this.projectionMatrix = new Matrix4();
@@ -73,6 +74,15 @@
                     this.coloredGeometryShaderParams.a_Vertex,
                     this.coloredGeometryShaderParams.a_Color
                 ];
+
+
+                gl.useProgram(this.particleShader);
+                this.particleShaderParams = {
+                    a_Vertex: gl.getAttribLocation(this.particleShader, "a_Vertex"),
+
+                    u_ModelViewMatrix: gl.getUniformLocation(this.particleShader, "u_ModelViewMatrix"),
+                    u_ProjectionMatrix: gl.getUniformLocation(this.particleShader, "u_ProjectionMatrix")
+                };
 
 
 
@@ -147,6 +157,7 @@
             Controllers.time = new TimeController();
             Controllers.performance = new PerformanceMonitor(gl);
             Controllers.forest = new Forest();
+            Controllers.particleSystem = new ParticleSystem(gl);
 
             Controllers.time.onFpsChange(function (newFps) {
                 $('#fps').text(newFps);
@@ -221,11 +232,13 @@
             var $cbxTerrain = $('#cbx-terrain');
             var $cbxSkybox = $('#cbx-skybox');
             var $cbxForest = $('#cbx-forest');
+            var $cbxParticles = $('#cbx-particles');
 
             $cbxBloom.prop("checked", ProcForest.Settings.useBloom);
             $cbxTerrain.prop("checked", ProcForest.Settings.drawTerrain);
             $cbxForest.prop("checked", ProcForest.Settings.drawForest);
             $cbxSkybox.prop("checked", ProcForest.Settings.drawSkybox);
+            $cbxParticles.prop("checked", ProcForest.Settings.drawParticles);
 
             $cbxBloom.click(function(e) {
                 ProcForest.Settings.useBloom = $cbxBloom.prop("checked");
@@ -241,6 +254,10 @@
 
             $cbxSkybox.click(function(e) {
                 ProcForest.Settings.drawSkybox = $cbxSkybox.prop("checked");
+            });
+
+            $cbxParticles.click(function(e) {
+                ProcForest.Settings.drawParticles = $cbxParticles.prop("checked");
             });
         },
 
@@ -480,6 +497,23 @@
             glHelper.disableAttribArrays(gl, resources.coloredGeometryShaderParams.attribArrays);
         },
 
+        RenderParticles: function renderParticles(gl, resources) {
+            if (!ProcForest.Settings.drawParticles)
+                return;
+
+            var particleSystem = Controllers.particleSystem;
+            var shaderParams = resources.particleShaderParams;
+
+            particleSystem.update();
+
+            gl.useProgram(resources.particleShader);
+            gl.enableVertexAttribArray(shaderParams.a_Vertex);
+            gl.uniformMatrix4fv(shaderParams.u_ModelViewMatrix, false, resources.modelViewMatrix.elements);
+            gl.uniformMatrix4fv(shaderParams.u_ProjectionMatrix, false, resources.projectionMatrix.elements);
+            particleSystem.draw(gl, shaderParams.a_Vertex);
+            gl.disableVertexAttribArray(shaderParams.a_Vertex);
+        },
+
         RenderClouds: function renderClouds(gl, resources) {
 
         },
@@ -492,12 +526,14 @@
             //this.RenderSpecialSquare(gl, resources);
             this.RenderLakes(gl, resources);
             this.RenderForest(gl, resources);
+            this.RenderParticles(gl, resources);
             this.RenderClouds(gl, resources);
         },
 
         RenderEmissive: function renderEmissiveElements(gl, resources) {
             //this.RenderSkybox(gl, resources);
             this.RenderForest(gl, resources);
+            this.RenderParticles(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
         }
     };
