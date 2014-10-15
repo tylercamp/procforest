@@ -10,6 +10,7 @@
         this.baseOrientation = { x: 0, y: 0, z: 0 };
         this.parent = null;
         this.subdivisionIndex = -1;
+        this.numChildren = 0;
         this.isFinalized = false;
 
         this.structure = [];
@@ -136,9 +137,9 @@
 
         colors = [];
         for (i = 0; i < vertices.length / 3; i++) {
-            colors.push(1);
-            colors.push(1);
-            colors.push(1);
+            colors.push(1 * this.fingerprint.a + i / vertices.length);
+            colors.push(1 * this.fingerprint.b + i / vertices.length);
+            colors.push(1 * this.fingerprint.c + i / vertices.length);
         }
 
         if (!this._structureMesh)
@@ -158,13 +159,17 @@
     };
 
     Vegetation.prototype.grow = function grow(terrain) {
-        if (this.structureSegments.length === 0 || !this.seed) {
+        var structureSegments = this.structureSegments;
+
+        if (structureSegments.length === 0 || !this.seed) {
             console.error('Cannot grow vegetation without a base segment or seed, try creating vegetation using Forest.Seed.plant(...)');
         }
 
-        var i, segment, relativeChange, lastVertex, nextToLastVertex, currentDirection;
-        for (i = 0; i < this.structureSegments.length; i++) {
-            segment = this.structureSegments[i];
+        var newSegments = [];
+
+        var i, segment, growth, lastVertex, nextToLastVertex, currentDirection;
+        for (i = 0; i < structureSegments.length; i++) {
+            segment = structureSegments[i];
             if (segment.isFinalized)
                 continue;
 
@@ -182,18 +187,50 @@
                 currentDirection = segment.baseOrientation;
             }
 
-            relativeChange = this.seed.growth(terrain, segment, this.fingerprint, currentDirection);
-            if (!relativeChange) {
-                this.seed.finalize(segment);
-                segment.isFinalized = true;
-                continue;
+            growth = this.seed.growth(terrain, segment, this.fingerprint, currentDirection) || {};
+
+            if (growth.offspring) {
+                console.log('Offspring generation NYI');
             }
 
-            segment.structure.push({
-                x: lastVertex.x + relativeChange.x,
-                y: lastVertex.y + relativeChange.y,
-                z: lastVertex.z + relativeChange.z
-            });
+            if (growth.relativeChange) {
+                segment.structure.push({
+                    x: lastVertex.x + growth.relativeChange.x,
+                    y: lastVertex.y + growth.relativeChange.y,
+                    z: lastVertex.z + growth.relativeChange.z
+                });
+            }
+
+            if (growth.newSegments) {
+                growth.newSegments.forEach(function (segmentInfo) {
+                    var rootStructureA, rootStructureB, rootStructureIndex, newSegment = new Segment();
+                    newSegment.parent = segment;
+                    newSegment.subdivisionIndex = newSegment.parent.subdivisionIndex + 1;
+                    newSegment.baseOrientation = segmentInfo.baseOrientation;
+                    rootStructureIndex = Math.floor((segment.structure.length - 1) * segmentInfo.offset);
+                    rootStructureA = segment.structure[rootStructureIndex];
+                    rootStructureB = segment.structure[rootStructureIndex + 1];
+                    segmentInfo.offset -= rootStructureIndex / (segment.structure.length);
+                    segmentInfo.offset *= segment.structure.length;
+//                    if (segmentInfo.offset < 0)
+//                        debugger;
+//                    if (segmentInfo.offset > 1)
+//                        debugger;
+
+                    newSegment.structure.push(Math.vecLerp(segmentInfo.offset, rootStructureA, rootStructureB));
+                    newSegments.push(newSegment);
+                    segment.numChildren++;
+                });
+            }
+
+            if (!growth.relativeChange) {
+                this.seed.finalize(segment);
+                segment.isFinalized = true;
+            }
+        }
+
+        for (i = 0; i < newSegments.length; i++) {
+            structureSegments.push(newSegments[i]);
         }
 
         this._needsBuild = true;

@@ -61,7 +61,7 @@
         this.timeline = new Timeline();
         this.vegetationObjects = [];
 
-        var maxSeedsDistance = 30;
+        var maxSeedsDistance = ProcForest.Settings.Forest.maxSeedsDistance;
         var spread = { x: 0, y: 0 };
         var terrainWidth = terrain.renderWidth(), terrainHeight = terrain.renderHeight();
         spread.x = terrainWidth / (Math.ceil(terrainWidth/maxSeedsDistance) * maxSeedsDistance) * maxSeedsDistance;

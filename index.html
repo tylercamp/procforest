@@ -191,12 +191,20 @@
 //                skybox_Back: 'resources/skybox/miramar_bk.jpg',
 //                skybox_Bottom: 'resources/skybox/miramar_dn.jpg'
 
-                skybox_Front: 'resources/skybox/TropicalSunnyDayFront2048.jpg',
-                skybox_Left: 'resources/skybox/TropicalSunnyDayLeft2048.jpg',
-                skybox_Right: 'resources/skybox/TropicalSunnyDayRight2048.jpg',
-                skybox_Top: 'resources/skybox/TropicalSunnyDayUp2048.jpg',
-                skybox_Back: 'resources/skybox/TropicalSunnyDayBack2048.jpg',
-                skybox_Bottom: 'resources/skybox/TropicalSunnyDayDown2048.jpg'
+//                skybox_Front: 'resources/skybox/TropicalSunnyDayFront2048.jpg',
+//                skybox_Left: 'resources/skybox/TropicalSunnyDayLeft2048.jpg',
+//                skybox_Right: 'resources/skybox/TropicalSunnyDayRight2048.jpg',
+//                skybox_Top: 'resources/skybox/TropicalSunnyDayUp2048.jpg',
+//                skybox_Back: 'resources/skybox/TropicalSunnyDayBack2048.jpg',
+//                skybox_Bottom: 'resources/skybox/TropicalSunnyDayDown2048.jpg'
+
+                skybox_Front: 'resources/skybox/DarkStormyFront2048.jpg',
+                skybox_Left: 'resources/skybox/DarkStormyLeft2048.jpg',
+                skybox_Right: 'resources/skybox/DarkStormyRight2048.jpg',
+                skybox_Top: 'resources/skybox/DarkStormyUp2048.jpg',
+                skybox_Back: 'resources/skybox/DarkStormyBack2048.jpg',
+                skybox_Bottom: 'resources/skybox/DarkStormyDown2048.jpg'
+
             });
 
 
@@ -293,6 +301,7 @@
                 var screenWidth = resources.screen.width, screenHeight = resources.screen.height;
                 var bloomSizeFactor = 0.5;
                 var bloomWidth = Math.ceil(screenWidth * bloomSizeFactor), bloomHeight = Math.ceil(screenHeight * bloomSizeFactor);
+                //var bloomWidth = 250, bloomHeight = 250;
 
                 var screenBuffer = Controllers.bufferSource.getBuffer(gl, screenWidth, screenHeight, "ScreenBuffer");
                 var bloomBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight);
@@ -346,6 +355,8 @@
                         gl.viewport(0, 0, screenWidth, screenHeight);
 
                         gl.blendFunc(gl.ONE, gl.ONE);
+                        Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
+                        Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
                         Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
                     }

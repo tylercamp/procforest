@@ -7,9 +7,54 @@
     "use strict";
 
     window.Seeds = {
+        wispTree: {
+            name: 'wisp tree',
+            terrainAlignmentFactor: 0.3,
+
+            probability: function() {
+                return ProcForest.Settings.SeedProbabilities.wispTree;
+            },
+
+            finalize: function(segment) {
+
+            },
+
+            //  Returns vector indicating position for next point (relative to last point)
+            growth: function(terrain, segment, fingerprint, currentDirection) {
+                //  segment.length
+                //  segment.parent
+                //  segment.baseOrientation
+                //  segment.subdivisionIndex
+
+                var newSegments = null;
+                if ((1 / (segment.subdivisionIndex + 1)) * (1 / (segment.numChildren + 1)) * Math.random() * fingerprint.a > 0.1)
+                    newSegments = [
+                        { offset: 0.5, baseOrientation: Math.normal(Math.vecModulate(segment.baseOrientation, Math.pi/4, Math.pi/4)) }
+                    ];
+
+                //  Make sure the direction is at an angle with the terrain
+                var currentDirectionMod = Math.vecOfLength(Math.vecModulateAbsolute(currentDirection, null, Math.pi/3), 2);
+                //  TWIRL BABY TWIRL
+                return {
+                    newSegments: newSegments,
+                    relativeChange: Math.vecModulate(currentDirectionMod, Math.pi/7, 0)
+                };
+
+//                return {
+//                    x: currentDirection.x + Math.random() - 0.5,
+//                    y: currentDirection.y + Math.random() - 0.5,
+//                    z: currentDirection.z + Math.random() - 0.5
+//                };
+            },
+
+            shape: function() {
+                console.error('shape NYI');
+            }
+        },
+
         tree: {
             name: 'tree',
-            terrainAlignmentFactor: 0.3,
+            terrainAlignmentFactor: 0.5,
 
             probability: function() {
                 return ProcForest.Settings.SeedProbabilities.tree;
@@ -26,10 +71,24 @@
                 //  segment.baseOrientation
                 //  segment.subdivisionIndex
 
-                //  Make sure the direction is at an angle with the terrain
-                var currentDirectionMod = Math.vecModulateAbsolute(currentDirection, null, Math.pi/3);
+                var newSegments = null;
+                if ((1 / (segment.subdivisionIndex + 1)) * (1 / (segment.numChildren + 1)) * Math.random() * fingerprint.a > 0.5)
+                    newSegments = [
+                        { offset: 0.5, baseOrientation: Math.normal(Math.vecLerp(0.5, Math.cross(currentDirection, Math.randomVector()), { x: 0, y: 1, z: 0 })) }
+                    ];
+
+                //newSegments = null;
+
+                var randomMovementSize = Math.random()*0.3*fingerprint.b;
+                var relativeChange = Math.vecSum(currentDirection, Math.fromSphericalCoordinate(Math.random()*Math.pi*2, Math.random()*Math.pi_2, randomMovementSize));
+                relativeChange = Math.normal(Math.vecLerp(0.2 * fingerprint.a * (1 / (segment.subdivisionIndex + 1)), relativeChange, { x: 0, y: 1, z: 0 }));
+                //Math.normalize(relativeChange);
+
                 //  TWIRL BABY TWIRL
-                return Math.vecModulate(currentDirectionMod, Math.pi/7, 0);
+                return {
+                    newSegments: newSegments,
+                    relativeChange: relativeChange
+                };
 
 //                return {
 //                    x: currentDirection.x + Math.random() - 0.5,
@@ -127,17 +186,19 @@
 
                 naturalGrowth.y -= Math.max(0, lastPoint.y - maxHeight) * 0.2;
 
-                var result = {
+                var relativeChange = {
                     x: naturalGrowth.x + sunPull*sunVector.x + gravityPull*gravityVector.x,
                     y: naturalGrowth.y + sunPull*sunVector.y + gravityPull*gravityVector.y,
                     z: naturalGrowth.z + sunPull*sunVector.z + gravityPull*gravityVector.z
                 };
 
                 //  tilt the growth vector towards the max height of the vegetation
-                result = Math.vecModulate(result, null, (maxHeight - lastPoint.y) * 2 * (1/Math.pi) * fingerprint.c);
-                result = Math.vecOfLength(result, 0.75);
+                relativeChange = Math.vecModulate(relativeChange, null, (maxHeight - lastPoint.y) * 2 * (1/Math.pi) * fingerprint.c);
+                relativeChange = Math.vecOfLength(relativeChange, 0.75);
 
-                return result;
+                return {
+                    relativeChange: relativeChange
+                };
             },
 
             shape: function () {

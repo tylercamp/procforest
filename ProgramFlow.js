@@ -247,7 +247,7 @@
         GenerateTerrain: function generateTerain(renderResources) {
             Controllers.terrain.generator = new TerrainController.BlankGenerator();
 
-            var terrainSize = ProcForest.Settings.terrainSize, scale = 3;
+            var terrainSize = ProcForest.Settings.terrainSize, scale = 2;
             var heightFactor = 0.7;
 
             var simplexGenerator = new TerrainController.SimplexGenerator(terrainSize * 0.1 * heightFactor);
@@ -281,8 +281,8 @@
 
             renderResources.currentTerrain.update();
 
-            Controllers.camera.x = renderResources.currentTerrain.width() * renderResources.currentTerrain.scale.x / 2;
-            Controllers.camera.z = renderResources.currentTerrain.height() * renderResources.currentTerrain.scale.z / 2;
+            Controllers.camera.x = renderResources.currentTerrain.width() * renderResources.currentTerrain.scale.x * 0.5;
+            Controllers.camera.z = renderResources.currentTerrain.height() * renderResources.currentTerrain.scale.z * 0.55;
         },
 
         GrowForest: function growForest(renderResources, numTicks) {
@@ -496,7 +496,8 @@
         },
 
         RenderEmissive: function renderEmissiveElements(gl, resources) {
-            this.RenderSkybox(gl, resources);
+            //this.RenderSkybox(gl, resources);
+            this.RenderForest(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
         }
     };

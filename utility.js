@@ -61,13 +61,23 @@
     };
 
     Math.cross = function vectorCrossProduct(leftVecObject, rightVecObject) {
-        return { x: leftVecObject.y * rightVecObject.z - leftVecObject.z * rightVecObject.y,
+        return {
+            x: leftVecObject.y * rightVecObject.z - leftVecObject.z * rightVecObject.y,
             y: leftVecObject.z * rightVecObject.x - leftVecObject.x * rightVecObject.z,
-            z: leftVecObject.x * rightVecObject.y - leftVecObject.y * rightVecObject.x }
+            z: leftVecObject.x * rightVecObject.y - leftVecObject.y * rightVecObject.x
+        };
     };
 
     Math.dot = function vectorDotProduct(leftVecObject, rightVecObject) {
         return leftVecObject.x * rightVecObject.x + leftVecObject.y * rightVecObject.y + leftVecObject.z * rightVecObject.z;
+    };
+
+    Math.perpVector = function perpendicularVector(vecObject, rotation) {
+        var azi, inc, mag;
+        mag = Math.magnitude(vecObject);
+        azi = Math.atan2(vecObject.z, vecObject.x);
+        inc = Math.asin(vecObject.y / mag);
+
     };
 
     Math.vecOfLength = function(sourceVector, length) {
@@ -78,8 +88,6 @@
             z: sourceVector.z * conversionFactor
         };
     };
-
-
 
     Math.vecLerp = function lerpVectors(normal, v1, v2) {
         normal = Math.clamp(normal, 0, 1);
@@ -117,6 +125,38 @@
             currentInclination = inclination;
 
         return Math.fromSphericalCoordinate(currentAzimuth, currentInclination, length);
+    };
+
+    Math.vecSum = function sumOfVectors(v1, v2) {
+        return {
+            x: v1.x + v2.x,
+            y: v1.y + v2.y,
+            z: v1.z + v2.z
+        };
+    };
+
+    //  v1 - v2
+    Math.vecDifference = function differenceOfVectors(v1, v2) {
+        return {
+            x: v1.x - v2.x,
+            y: v1.y - v2.y,
+            z: v1.z - v2.z
+        };
+    };
+
+    Math.vecNegate = function negatedVector(v) {
+        return {
+            x: -v.x, y: -v.y, z: -v.z
+        };
+    };
+
+    Math.randomVector = function generateRandomVectorOfLength(length_) {
+        length_ = length_ || 1;
+        return Math.vecOfLength({
+            x: Math.random() - 0.5,
+            y: Math.random() - 0.5,
+            z: Math.random() - 0.5
+        }, length_);
     };
 
 

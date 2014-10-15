@@ -11,21 +11,26 @@
 
 
     window.ProcForest.Settings = {
-        useBloom: false,
+        useBloom: true,
 
-        drawSkybox: false,
+        drawSkybox: true,
         drawForest: true,
         drawTerrain: true,
 
-        terrainSize: 40,
+        terrainSize: 400,
 
-        frameSkip: 2,
+        frameSkip: 1,
         backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 },
-        numForestSimulationTicks: 100,
+        numForestSimulationTicks: 1,
+
+        Forest: {
+            maxSeedsDistance: 30
+        },
 
         SeedProbabilities: {
-            tree: 0,
-            root: 1
+            wispTree: 0.5,
+            tree: 0.5,
+            root: 0
         }
     };
 

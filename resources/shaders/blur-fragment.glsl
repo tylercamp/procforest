@@ -27,5 +27,5 @@ void main()
     gl_FragColor += texture2D(u_SourceTexture, v_BlurTexCoords[12])*0.00895781211794;
     gl_FragColor += texture2D(u_SourceTexture, v_BlurTexCoords[13])*0.0044299121055113265;
 
-    gl_FragColor *= 0.6;
+    //gl_FragColor *= 0.6;
 }
