@@ -163,41 +163,6 @@
                 $('#fps').text(newFps);
             });
 
-            //  I am so sorry for anyone trying to figure out how this little chunk works
-            Controllers.performance.onStatsUpdate(function (stats) {
-                var fps = Controllers.time.getFps();
-                //  The callback is bound to an object with an 'updateStats' method
-                this.updateStats(fps, [
-                    { e: "#stats-draw-elements",    value: stats.drawElements },
-                    { e: "#stats-draw-arrays",      value: stats.drawArrays },
-                    { e: "#stats-bind-texture",     value: stats.bindTexture },
-                    { e: "#stats-bind-framebuffer", value: stats.bindFramebuffer },
-                    { e: "#stats-clear",            value: stats.clear },
-                    { e: "#stats-use-program",      value: stats.useProgram },
-                    { e: "#stats-enable-vaa",       value: stats.enableVAA },
-                    { e: "#stats-disable-vaa",      value: stats.disableVAA }
-                ]);
-
-                this.updateResources([
-                    { e: "#stats-textures",     value: stats.totalTextures },
-                    { e: "#stats-framebuffers", value: stats.totalFramebuffers },
-                    { e: "#stats-programs",     value: stats.totalShaderPrograms }
-                ]);
-
-            }.bind({ // Object that has the updateUI method
-                updateStats: function(fps, statsObjects) {
-                    statsObjects.forEach(function (data) {
-                        $(data.e + '-pf').text(Math.round(data.value / fps)); // per-frame stats
-                        $(data.e + '-ps').text(data.value); // per-second stats
-                    });
-                },
-                updateResources: function(statsObjects) {
-                    statsObjects.forEach(function (data) {
-                        $(data.e).text(data.value);
-                    });
-                }
-            }));
-
             ProgramFlow.InitializeResources(gl, resources, renderResources, canvas);
 
             gl.enable(gl.DEPTH_TEST);
@@ -215,7 +180,7 @@
 
             renderResources.skybox.generateBuffers(gl);
 
-            Blur.init(gl, resources.blur_HorizontalVertexShader, resources.blur_VerticalVertexShader, resources.blur_FragmentShader);
+            Blur.init(gl, resources.blur_HorizontalVertexShader, resources.blur_VerticalVertexShader, resources.blur_FragShader);
 
             return gl;
         },
@@ -233,6 +198,36 @@
             var $cbxSkybox = $('#cbx-skybox');
             var $cbxForest = $('#cbx-forest');
             var $cbxParticles = $('#cbx-particles');
+//            var $bloomKernelSlider = $('#bloom-kernel-slider');
+            var $bloomStrideSlider = $('#bloom-stride-slider');
+//            var $bloomPassSlider = $('#bloom-pass-slider');
+//            var $bloomPowerSlider = $('#bloom-power-slider');
+//            var $bloomFactorSlider = $('#bloom-factor-slider');
+
+//            $bloomKernelSlider.val(Blur.kernelSize);
+//            $bloomKernelSlider.change(function (e) {
+//                Blur.kernelSize = parseInt(e.target.value);
+//            });
+
+            $bloomStrideSlider.val(Blur.sampleStride);
+            $bloomStrideSlider.change(function (e) {
+                Blur.sampleStride = parseInt(e.target.value);
+            });
+
+//            $bloomPassSlider.val(Blur.numPasses);
+//            $bloomPassSlider.change(function (e) {
+//                Blur.numPasses = parseInt(e.target.value);
+//            });
+//
+//            $bloomPowerSlider.val(Blur.intensityRamp);
+//            $bloomPowerSlider.change(function (e) {
+//                Blur.intensityRamp = parseFloat(e.target.value);
+//            });
+//
+//            $bloomFactorSlider.val(Blur.intensityFactor);
+//            $bloomFactorSlider.change(function (e) {
+//                Blur.intensityFactor = parseFloat(e.target.value);
+//            });
 
             $cbxBloom.prop("checked", ProcForest.Settings.useBloom);
             $cbxTerrain.prop("checked", ProcForest.Settings.drawTerrain);
@@ -259,6 +254,41 @@
             $cbxParticles.click(function(e) {
                 ProcForest.Settings.drawParticles = $cbxParticles.prop("checked");
             });
+
+            //  I am so sorry for anyone trying to figure out how this little chunk works
+            Controllers.performance.onStatsUpdate(function (stats) {
+                var fps = Controllers.time.getFps();
+                //  The callback is bound to an object with an 'updateStats' method
+                this.updateStats(fps, [
+                    { e: "#stats-draw-elements",    value: stats.drawElements },
+                    { e: "#stats-draw-arrays",      value: stats.drawArrays },
+                    { e: "#stats-bind-texture",     value: stats.bindTexture },
+                    { e: "#stats-bind-framebuffer", value: stats.bindFramebuffer },
+                    { e: "#stats-clear",            value: stats.clear },
+                    { e: "#stats-use-program",      value: stats.useProgram },
+                    { e: "#stats-enable-vaa",       value: stats.enableVAA },
+                    { e: "#stats-disable-vaa",      value: stats.disableVAA }
+                ]);
+
+                this.updateResources([
+                    { e: "#stats-textures",     value: stats.totalTextures },
+                    { e: "#stats-framebuffers", value: stats.totalFramebuffers },
+                    { e: "#stats-programs",     value: stats.totalShaderPrograms }
+                ]);
+
+            }.bind({ // Object that has the updateUI method
+                    updateStats: function(fps, statsObjects) {
+                        statsObjects.forEach(function (data) {
+                            $(data.e + '-pf').text(Math.round(data.value / fps)); // per-frame stats
+                            $(data.e + '-ps').text(data.value); // per-second stats
+                        });
+                    },
+                    updateResources: function(statsObjects) {
+                        statsObjects.forEach(function (data) {
+                            $(data.e).text(data.value);
+                        });
+                    }
+                }));
         },
 
         GenerateTerrain: function generateTerain(renderResources) {
