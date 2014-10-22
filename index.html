@@ -101,6 +101,7 @@
     <script src="system/forest/GenerationSeeds.js"></script>
     <script src="system/forest/Vegetation.js"></script>
     <script src="system/forest/Seed.js"></script>
+    <script src="system/forest/MeshBuilder.js"></script>
     <script src="system/Mesh.js"></script>
     <script src="system/ParticleSystem.js"></script>
 
@@ -262,7 +263,7 @@
                     {
                         initText: 'Simulating forest growth',
                         initFunc: function() {
-                            ProgramFlow.GrowForest(renderResources, ProcForest.Settings.numForestSimulationTicks);
+                            ProgramFlow.GrowForest(gl, renderResources, ProcForest.Settings.numForestSimulationTicks);
                         }
                     },
 
@@ -320,9 +321,8 @@
 
 
                 var screenWidth = resources.screen.width, screenHeight = resources.screen.height;
-                var bloomSizeFactor = 1;
+                var bloomSizeFactor = 1 / 2;
                 var bloomWidth = Math.ceil(screenWidth * bloomSizeFactor), bloomHeight = Math.ceil(screenHeight * bloomSizeFactor);
-                //var bloomWidth = 250, bloomHeight = 250;
 
                 var screenBuffer = Controllers.bufferSource.getBuffer(gl, screenWidth, screenHeight, "ScreenBuffer");
                 var bloomBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight);

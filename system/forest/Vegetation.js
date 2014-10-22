@@ -108,12 +108,70 @@
             c: Math.random()
         };
 
+        this._renderMesh = null;
         this._structureMesh = null;
         this._needsBuild = false;
     }
 
     Vegetation.prototype.draw = function(gl, shaderParams, autoAttribArrays_) {
+        if (!this._renderMesh || this._needsBuild) {
+            this._generateRenderMesh(gl);
+        }
 
+        if (autoAttribArrays_ === undefined)
+            autoAttribArrays_ = true;
+
+        if (autoAttribArrays_) {
+            gl.enableVertexAttribArray(shaderParams.a_Vertex);
+            gl.enableVertexAttribArray(shaderParams.a_Color);
+        }
+
+        var meshBuffers = this._renderMesh.getBuffers();
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, meshBuffers.vertices);
+        gl.vertexAttribPointer(shaderParams.a_Vertex, this._renderMesh.vertexDescriptor.stride, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, meshBuffers.colors);
+        gl.vertexAttribPointer(shaderParams.a_Color, this._renderMesh.colorDescriptor.stride, gl.FLOAT, false, 0, 0);
+
+        if (meshBuffers.indices) {
+            throw "DON'T DO THIS (NYI)";
+        }
+        else {
+            gl.drawArrays(this._renderMesh.vertexDescriptor.primitive, 0, this._renderMesh.vertices.length / 3);
+        }
+
+        if (autoAttribArrays_) {
+            gl.disableVertexAttribArray(shaderParams.a_Vertex);
+            gl.disableVertexAttribArray(shaderParams.a_Color);
+        }
+    };
+
+    Vegetation.prototype._generateRenderMesh = function(gl) {
+        var meshData = VegetationMeshBuilder.instance.buildMeshForVegetation(this);
+        var colors = [];
+
+        if (!this._renderMesh)
+            this._renderMesh = new Mesh();
+
+        var i;
+        for (i = 0; i < meshData.vertices.length; i++) {
+            colors.push(0.5 * this.fingerprint.a + i / meshData.vertices.length);
+            colors.push(0.5 * this.fingerprint.b + i / meshData.vertices.length);
+            colors.push(0.5 * this.fingerprint.c + i / meshData.vertices.length);
+        }
+
+        this._renderMesh.setVertices({
+            data: meshData.vertices,
+            primitive: gl.TRIANGLES
+        });
+
+        this._renderMesh.setColors({
+            data: colors
+        });
+
+        this._renderMesh.build(gl);
+        this._needsBuild = false;
     };
 
     Vegetation.prototype._generateStructureMesh = function(gl) {

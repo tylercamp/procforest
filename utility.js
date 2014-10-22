@@ -72,12 +72,23 @@
         return leftVecObject.x * rightVecObject.x + leftVecObject.y * rightVecObject.y + leftVecObject.z * rightVecObject.z;
     };
 
-    Math.perpVector = function perpendicularVector(vecObject, rotation) {
-        var azi, inc, mag;
-        mag = Math.magnitude(vecObject);
-        azi = Math.atan2(vecObject.z, vecObject.x);
-        inc = Math.asin(vecObject.y / mag);
+    Math.perpVector = function perpendicularVector(vecObject) {
+        var result = {
+            x: -vecObject.y,
+            y: vecObject.x,
+            z: vecObject.z
+        };
 
+        return result;
+
+        //  0.01 floating-point tolerance
+        if (Math.abs(Math.dot(vecObject, result)) < 0.01)
+            return result;
+        else return {
+            x: vecObject.x,
+            y: vecObject.z,
+            z: -vecObject.y
+        }
     };
 
     Math.vecOfLength = function(sourceVector, length) {
@@ -89,13 +100,13 @@
         };
     };
 
-    Math.vecLerp = function lerpVectors(normal, v1, v2) {
-        normal = Math.clamp(normal, 0, 1);
-        var normal_i = 1 - normal;
+    Math.vecLerp = function lerpVectors(ratio, v1, v2) {
+        ratio = Math.clamp(ratio, 0, 1);
+        var normal_i = 1 - ratio;
         return {
-            x: v1.x * normal_i + v2.x * normal,
-            y: v1.y * normal_i + v2.y * normal,
-            z: v1.z * normal_i + v2.z * normal
+            x: v1.x * normal_i + v2.x * ratio,
+            y: v1.y * normal_i + v2.y * ratio,
+            z: v1.z * normal_i + v2.z * ratio
         };
     };
 
@@ -141,6 +152,14 @@
             x: v1.x - v2.x,
             y: v1.y - v2.y,
             z: v1.z - v2.z
+        };
+    };
+
+    Math.vecMultiply = function multiplyVectorByScalar(v, s) {
+        return {
+            x: v.x * s,
+            y: v.y * s,
+            z: v.z * s
         };
     };
 

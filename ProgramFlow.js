@@ -332,8 +332,11 @@
             Controllers.camera.z = renderResources.currentTerrain.height() * renderResources.currentTerrain.scale.z * 0.55;
         },
 
-        GrowForest: function growForest(renderResources, numTicks) {
+        GrowForest: function growForest(gl, renderResources, numTicks) {
             Controllers.forest.generate(numTicks, renderResources.currentTerrain);
+            Controllers.forest.vegetationObjects.forEach(function(vegetation) {
+                vegetation._generateRenderMesh(gl);
+            });
         },
 
         UpdateUI: function updateUI(resources) {
@@ -509,7 +512,6 @@
 
             var shader = resources.coloredGeometryShader;
             var shaderParams = resources.coloredGeometryShaderParams;
-            var camera = Controllers.camera;
 
             gl.useProgram(shader);
 
@@ -521,7 +523,8 @@
             var i, vegetationObject;
             for (i = 0; i < forest.vegetationObjects.length; i++) {
                 vegetationObject = forest.vegetationObjects[i];
-                vegetationObject.drawStructure(gl, shaderParams, false);
+                //vegetationObject.drawStructure(gl, shaderParams, false);
+                vegetationObject.draw(gl, shaderParams, false);
             }
 
             glHelper.disableAttribArrays(gl, resources.coloredGeometryShaderParams.attribArrays);

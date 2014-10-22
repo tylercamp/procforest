@@ -49,7 +49,7 @@
 
     
     window.Blur = {
-        sampleStride: 2,
+        sampleStride: 3,
         intensityRamp: 1.5,
         intensityFactor: 1.5,
 
