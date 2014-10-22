@@ -45,8 +45,21 @@
     <div id="settings-gui" class="gui">
         <h3>Settings</h3>
         <label for="cbx-bloom">Bloom</label>
-        <input id="cbx-bloom" type="checkbox">
-        <br>
+        <input id="cbx-bloom" type="checkbox"><br>
+        <!--
+        <label for="bloom-kernel-slider">Kernel Size</label>
+        <input id="bloom-kernel-slider" type="range" min="3" max="31"><br>
+        -->
+        <label for="bloom-stride-slider">Sample Stride</label>
+        <input id="bloom-stride-slider" type="range" min="1" max="10"><br>
+        <!--
+        <label for="bloom-pass-slider">Num Passes</label>
+        <input id="bloom-pass-slider" type="range" min="1" max="5"><br>
+        <label for="bloom-power-slider">Power</label>
+        <input id="bloom-power-slider" type="range" min="1" max="5" step="0.05"><br>
+        <label for="bloom-factor-slider">Factor</label>
+        <input id="bloom-factor-slider" type="range" min="0.5" max="5" step="0.05"><br>
+        -->
         <br>
 
         <label for="cbx-forest">Draw Forest</label>
@@ -88,6 +101,7 @@
     <script src="system/forest/GenerationSeeds.js"></script>
     <script src="system/forest/Vegetation.js"></script>
     <script src="system/forest/Seed.js"></script>
+    <script src="system/forest/MeshBuilder.js"></script>
     <script src="system/Mesh.js"></script>
     <script src="system/ParticleSystem.js"></script>
 
@@ -181,7 +195,7 @@
 
                 blur_HorizontalVertexShader: "resources/shaders/blur-h-vertex.glsl",
                 blur_VerticalVertexShader: "resources/shaders/blur-v-vertex.glsl",
-                blur_FragmentShader: "resources/shaders/blur-fragment.glsl",
+                blur_FragShader: "resources/shaders/blur-fragment.glsl",
 
                 //skyboxImage: "resources/skybox_texture.jpg",
 
@@ -249,7 +263,7 @@
                     {
                         initText: 'Simulating forest growth',
                         initFunc: function() {
-                            ProgramFlow.GrowForest(renderResources, ProcForest.Settings.numForestSimulationTicks);
+                            ProgramFlow.GrowForest(gl, renderResources, ProcForest.Settings.numForestSimulationTicks);
                         }
                     },
 
@@ -307,9 +321,8 @@
 
 
                 var screenWidth = resources.screen.width, screenHeight = resources.screen.height;
-                var bloomSizeFactor = 0.5;
+                var bloomSizeFactor = 1 / 2;
                 var bloomWidth = Math.ceil(screenWidth * bloomSizeFactor), bloomHeight = Math.ceil(screenHeight * bloomSizeFactor);
-                //var bloomWidth = 250, bloomHeight = 250;
 
                 var screenBuffer = Controllers.bufferSource.getBuffer(gl, screenWidth, screenHeight, "ScreenBuffer");
                 var bloomBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight);
@@ -317,6 +330,7 @@
 
 
                 //  Clear screen-buffer
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                 gl.clearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -363,8 +377,6 @@
                         gl.viewport(0, 0, screenWidth, screenHeight);
 
                         gl.blendFunc(gl.ONE, gl.ONE);
-                        Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
-                        Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
                         Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
                     }
