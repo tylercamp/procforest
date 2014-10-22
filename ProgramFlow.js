@@ -159,6 +159,10 @@
             Controllers.forest = new Forest();
             Controllers.particleSystem = new ParticleSystem(gl);
 
+            Controllers.keyboard.onKey('P', function() {
+                Controllers.particleSystem.generateParticles(10, 10, 60, 50, 60);
+            });
+
             Controllers.time.onFpsChange(function (newFps) {
                 $('#fps').text(newFps);
             });
@@ -504,6 +508,7 @@
             var particleSystem = Controllers.particleSystem;
             var shaderParams = resources.particleShaderParams;
 
+            //particleSystem.generateParticles(60, 50, 10, 0);
             particleSystem.update();
 
             gl.useProgram(resources.particleShader);
