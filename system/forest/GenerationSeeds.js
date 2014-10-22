@@ -9,6 +9,7 @@
     window.Seeds = {
         wispTree: {
             name: 'wisp tree',
+            radialGenerationAccuracy: 15,
             terrainAlignmentFactor: 0.3,
 
             probability: function() {
@@ -54,6 +55,7 @@
 
         tree: {
             name: 'tree',
+            radialGenerationAccuracy: 15,
             terrainAlignmentFactor: 0.5,
 
             probability: function() {
@@ -104,6 +106,7 @@
 
 //        shrub: {
 //            name: 'shrub',
+//            radialGenerationAccuracy: 6,
 //            terrainAlignmentFactor: 0.8,
 //
 //            probability: function () {
@@ -113,6 +116,7 @@
 
         root: {
             name: 'overgrowth root',
+            radialGenerationAccuracy: 15,
             terrainAligmentFactor: 1,
 
             probability: function () {
