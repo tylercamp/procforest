@@ -19,6 +19,7 @@
                 this.terrainShader = glHelper.generateShader(gl, resources.terrainVertexShader, resources.terrainFragmentShader);
                 this.coloredGeometryShader = glHelper.generateShader(gl, resources.coloredGeomVertexShader, resources.coloredGeomFragmentShader);
                 this.particleShader = glHelper.generateShader(gl, resources.particleVertexShader, resources.particleFragmentShader);
+                this.proceduralShader = glHelper.generateShader(gl, resources.proceduralVertexShader, resources.proceduralFragmentShader);
                 this.grassImage = glHelper.generateTextureObject(gl, resources.grassImage);
                 this.modelViewMatrix = new Matrix4();
                 this.projectionMatrix = new Matrix4();
@@ -83,6 +84,22 @@
                     u_ModelViewMatrix: gl.getUniformLocation(this.particleShader, "u_ModelViewMatrix"),
                     u_ProjectionMatrix: gl.getUniformLocation(this.particleShader, "u_ProjectionMatrix")
                 };
+
+
+                gl.useProgram(this.proceduralShader);
+                this.proceduralShaderParams = {
+                    a_Vertex: gl.getAttribLocation(this.proceduralShader, "a_Vertex"),
+                    a_Color: gl.getAttribLocation(this.proceduralShader, "a_Color"),
+
+                    u_NoiseParameter: gl.getUniformLocation(this.proceduralShader, "u_NoiseParameter"),
+
+                    u_ModelViewMatrix: gl.getUniformLocation(this.proceduralShader, "u_ModelViewMatrix"),
+                    u_ProjectionMatrix: gl.getUniformLocation(this.proceduralShader, "u_ProjectionMatrix")
+                };
+                this.proceduralShaderParams.attribArrays = [
+                    this.proceduralShaderParams.a_Vertex,
+                    this.proceduralShaderParams.a_Color
+                ];
 
 
 
@@ -212,6 +229,7 @@
 //            $bloomKernelSlider.change(function (e) {
 //                Blur.kernelSize = parseInt(e.target.value);
 //            });
+            var $textureGenSlider = $('#texture-gen-slider');
 
             $bloomStrideSlider.val(Blur.sampleStride);
             $bloomStrideSlider.change(function (e) {
@@ -232,6 +250,11 @@
 //            $bloomFactorSlider.change(function (e) {
 //                Blur.intensityFactor = parseFloat(e.target.value);
 //            });
+
+            $textureGenSlider.val(ProcForest.Settings.textureVelocity);
+            $textureGenSlider.change(function (e) {
+                ProcForest.Settings.textureVelocity = parseFloat(e.target.value);
+            });
 
             $cbxBloom.prop("checked", ProcForest.Settings.useBloom);
             $cbxTerrain.prop("checked", ProcForest.Settings.drawTerrain);
@@ -360,6 +383,8 @@
             $('#terrain-norm-x').text(terrainNormal.x.toFixed(4));
             $('#terrain-norm-y').text(terrainNormal.y.toFixed(4));
             $('#terrain-norm-z').text(terrainNormal.z.toFixed(4));
+
+            $('#num-particles').text(Controllers.particleSystem.activeParticles);
         },
 
         UpdateCamera: function updateCamera(resources) {
@@ -438,7 +463,6 @@
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, terrain.terrainTexture);
             gl.uniform1i(shaderParams.u_Texture0, 0);
-            gl.uniform1i(shaderParams.u_UseShading, 1);
 
             var terrainData = terrain.getRenderingBuffers();
             for (var i = 0; i < terrainData.numBatches; i++) {
@@ -514,15 +538,21 @@
 
             var forest = Controllers.forest;
 
-            var shader = resources.coloredGeometryShader;
-            var shaderParams = resources.coloredGeometryShaderParams;
+            //var shader = resources.coloredGeometryShader;
+            //var shaderParams = resources.coloredGeometryShaderParams;
+
+            var shader = resources.proceduralShader;
+            var shaderParams = resources.proceduralShaderParams;
 
             gl.useProgram(shader);
 
             gl.uniformMatrix4fv(shaderParams.u_ModelViewMatrix, false, resources.modelViewMatrix.elements);
             gl.uniformMatrix4fv(shaderParams.u_ProjectionMatrix, false, resources.projectionMatrix.elements);
 
-            glHelper.enableAttribArrays(gl, resources.coloredGeometryShaderParams.attribArrays);
+            gl.uniform1f(shaderParams.u_NoiseParameter, ProcForest.Settings.textureGenSeed);
+            ProcForest.Settings.textureGenSeed += Controllers.time.getDelta() * ProcForest.Settings.textureVelocity;
+
+            glHelper.enableAttribArrays(gl, shaderParams.attribArrays);
 
             var i, vegetationObject;
             for (i = 0; i < forest.vegetationObjects.length; i++) {
@@ -531,7 +561,7 @@
                 vegetationObject.draw(gl, shaderParams, false);
             }
 
-            glHelper.disableAttribArrays(gl, resources.coloredGeometryShaderParams.attribArrays);
+            glHelper.disableAttribArrays(gl, shaderParams.attribArrays);
         },
 
         RenderParticles: function renderParticles(gl, resources) {

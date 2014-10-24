@@ -37,7 +37,8 @@
 
     Mesh.prototype.build = function buildBuffers(gl) {
 
-        this.vertexDescriptor.primitive = this.vertexDescriptor.primitive || gl.TRIANGLES;
+        if (!this.vertexDescriptor.primitive && this.vertexDescriptor.primitive !== 0) // 0 = gl.POINTS
+            this.vertexDescriptor.primitive = gl.TRIANGLES; // Default to triangles
 
         //  Build buffers
         if (this.vertices.length)

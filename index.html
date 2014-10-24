@@ -19,6 +19,8 @@
         Display Resolution: <span id="res-x"></span>x<span id="res-y"></span><br>
         <span id="fps">0</span> FPS<br>
         <br>
+        Num Particles: <span id="num-particles"></span><br>
+        <br>
         Frame skipping (<span id="frame-skipping"></span>)<br>
         <input type="range" min="0" max="5" id="frame-skipping-slider" /><br>
         <table>
@@ -76,6 +78,10 @@
 
         <label for="cbx-particles">Draw Particles</label>
         <input id="cbx-particles" type="checkbox">
+        <br>
+
+        <label for="texture-gen-slider">Texture Seed</label>
+        <input id="texture-gen-slider" type="range" min="0" max="10" step="0.05">
     </div>
 
     <div id="loading-pane"><div id="loading-text"></div></div>
@@ -185,6 +191,9 @@
                 coloredGeomFragmentShader: 'resources/shaders/coloredgeometry-fragment.glsl',
                 particleFragmentShader: 'resources/shaders/particle-fragment.glsl',
                 particleVertexShader: 'resources/shaders/particle-vertex.glsl',
+
+                proceduralFragmentShader: 'resources/shaders/procedural-texture-fragment.glsl',
+                proceduralVertexShader: 'resources/shaders/procedural-texture-vertex.glsl',
 
                 ppVertexShader: 'resources/shaders/postprocessing-vertex.glsl',
                 pp_Toon: 'resources/shaders/pp-toon.glsl',

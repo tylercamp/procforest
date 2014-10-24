@@ -73,22 +73,18 @@
     };
 
     Math.perpVector = function perpendicularVector(vecObject) {
-        var result = {
-            x: -vecObject.y,
-            y: vecObject.x,
-            z: vecObject.z
+        //return Math.cross(vecObject, { // Cross-product with arbitrary vector
+        //    x: vecObject.y,
+        //    y: vecObject.z,
+        //    z: vecObject.x
+        //});
+
+        //  hard-coded version of the above
+        return {
+            x: vecObject.y * vecObject.x - vecObject.z * vecObject.z,
+            y: vecObject.z * vecObject.y - vecObject.x * vecObject.x,
+            z: vecObject.x * vecObject.z - vecObject.y * vecObject.y
         };
-
-        return result;
-
-        //  0.01 floating-point tolerance
-        if (Math.abs(Math.dot(vecObject, result)) < 0.01)
-            return result;
-        else return {
-            x: vecObject.x,
-            y: vecObject.z,
-            z: -vecObject.y
-        }
     };
 
     Math.vecOfLength = function(sourceVector, length) {

@@ -18,11 +18,14 @@
         drawTerrain: true,
         drawParticles: true,
 
-        terrainSize: 200,
+        textureGenSeed: 0.125,
+        textureVelocity: 0.1,
+
+        terrainSize: 100,
 
         frameSkip: 1,
         backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 },
-        numForestSimulationTicks: 30,
+        numForestSimulationTicks: 10,
 
         Forest: {
             maxSeedsDistance: 40

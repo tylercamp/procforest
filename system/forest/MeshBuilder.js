@@ -96,7 +96,7 @@
 
     function generateVerticesForSegmentEndpoint(endpoint, normal, seed) {
         var result = [], i, rotationMatrix, perpVector, currentPoint, angle;
-        perpVector = Math.perpVector(normal);
+        perpVector = Math.normal(Math.perpVector(normal));
         perpVector = new Vector4([perpVector.x, perpVector.y, perpVector.z, 1]);
         for (i = 0; i < seed.radialGenerationAccuracy; i++) {
             angle = i / seed.radialGenerationAccuracy * 360;
@@ -110,6 +110,11 @@
 
         return result;
     }
+
+
+
+
+
     
     function VegetationMeshBuilder() {
 
