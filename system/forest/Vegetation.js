@@ -235,6 +235,8 @@
             if (segment.isFinalized)
                 continue;
 
+            this._needsBuild = true;
+
             lastVertex = segment.structure[segment.structure.length - 1];
 
             if (segment.structure.length > 1) {
@@ -294,8 +296,6 @@
         for (i = 0; i < newSegments.length; i++) {
             structureSegments.push(newSegments[i]);
         }
-
-        this._needsBuild = true;
     };
 
     //  For debugging
