@@ -86,7 +86,6 @@
                 relativeChange = Math.normal(Math.vecLerp(0.2 * fingerprint.a * (1 / (segment.subdivisionIndex + 1)), relativeChange, { x: 0, y: 1, z: 0 }));
                 //Math.normalize(relativeChange);
 
-                //  TWIRL BABY TWIRL
                 return {
                     newSegments: newSegments,
                     relativeChange: relativeChange

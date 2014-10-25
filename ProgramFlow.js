@@ -103,33 +103,8 @@
 
 
 
-
-
-
-
-                this.postProcessingShaders = {
-                    toonShader: glHelper.generateShader(gl, resources.ppVertexShader, resources.pp_Toon),
-                    bloomShader: glHelper.generateShader(gl, resources.ppVertexShader, resources.pp_Bloom),
-                    passthroughShader: glHelper.generateShader(gl, resources.ppVertexShader, resources.pp_Passthrough)
-                };
-
                 Effect.TexturePassthrough.init(gl, resources.ppVertexShader, resources.pp_Passthrough);
-
-                this.postProcessingShaders.toonShaderParams = {
-                    a_Vertex: gl.getAttribLocation(this.postProcessingShaders.toonShader, 'a_Vertex'),
-                    a_ScreenTexCoord: gl.getAttribLocation(this.postProcessingShaders.toonShader, 'a_ScreenTexCoord'),
-
-                    u_ScreenTexture: gl.getUniformLocation(this.postProcessingShaders.toonShader, 'u_ScreenTexture')
-                };
-
-                this.postProcessingShaders.bloomShaderParams = {
-                    a_Vertex: gl.getAttribLocation(this.postProcessingShaders.bloomShader, 'a_Vertex'),
-                    a_ScreenTexCoord: gl.getAttribLocation(this.postProcessingShaders.bloomShader, 'a_ScreenTexCoord'),
-
-                    u_ScreenTexture: gl.getUniformLocation(this.postProcessingShaders.bloomShader, 'u_ScreenTexture'),
-                    u_EmissiveTexture: gl.getUniformLocation(this.postProcessingShaders.bloomShader, 'u_EmissiveTexture'),
-                    u_SampleKernel: gl.getUniformLocation(this.postProcessingShaders.bloomShader, 'u_SampleKernel')
-                };
+                Effect.Blur.init(gl, resources.blur_HorizontalVertexShader, resources.blur_VerticalVertexShader, resources.blur_FragShader);
 
             }).call(renderResources);
         },
@@ -201,8 +176,6 @@
 
             renderResources.skybox.generateBuffers(gl);
 
-            Blur.init(gl, resources.blur_HorizontalVertexShader, resources.blur_VerticalVertexShader, resources.blur_FragShader);
-
             return gl;
         },
 
@@ -231,9 +204,9 @@
 //            });
             var $textureGenSlider = $('#texture-gen-slider');
 
-            $bloomStrideSlider.val(Blur.sampleStride);
+            $bloomStrideSlider.val(Effect.Blur.sampleStride);
             $bloomStrideSlider.change(function (e) {
-                Blur.sampleStride = parseInt(e.target.value);
+                Effect.Blur.sampleStride = parseInt(e.target.value);
             });
 
 //            $bloomPassSlider.val(Blur.numPasses);
@@ -600,7 +573,7 @@
 
         RenderEmissive: function renderEmissiveElements(gl, resources) {
             //this.RenderSkybox(gl, resources);
-            this.RenderForest(gl, resources);
+            //this.RenderForest(gl, resources);
             this.RenderParticles(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
         }

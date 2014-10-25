@@ -47,8 +47,9 @@
         return gen_a;
     }
 
+    window.Effect = window.Effect || {};
     
-    window.Blur = {
+    Effect.Blur = {
         sampleStride: 3,
         intensityRamp: 1.5,
         intensityFactor: 1.5,

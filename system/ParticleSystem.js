@@ -22,7 +22,7 @@
     }
 
     function ParticleSystem(gl) {
-        this.maxParticles = 3000;
+        this.maxParticles = 50000;
         this.particleArray = [];
         this.velocity = [];
         this.lifeTimes = [];

@@ -111,8 +111,7 @@
     <script src="system/Mesh.js"></script>
     <script src="system/ParticleSystem.js"></script>
 
-    <script src="system/Blur.js"></script>
-
+    <script src="effects/blur.effect.js"></script>
     <script src="effects/texture-passthrough.effect.js"></script>
 
     <script src="Utility.js"></script>
@@ -196,8 +195,6 @@
                 proceduralVertexShader: 'resources/shaders/procedural-texture-vertex.glsl',
 
                 ppVertexShader: 'resources/shaders/postprocessing-vertex.glsl',
-                pp_Toon: 'resources/shaders/pp-toon.glsl',
-                pp_Bloom: 'resources/shaders/pp-bloom.glsl',
                 pp_Passthrough: 'resources/shaders/pp-passthrough.glsl',
 
                 grassImage: "resources/grassgreentexture0005.jpg",
@@ -206,7 +203,6 @@
                 blur_VerticalVertexShader: "resources/shaders/blur-v-vertex.glsl",
                 blur_FragShader: "resources/shaders/blur-fragment.glsl",
 
-                //skyboxImage: "resources/skybox_texture.jpg",
 
                 //  Resources listed in order of skybox texture listing
 //                skybox_Front: 'resources/skybox/hills_ft.jpg',
@@ -386,7 +382,7 @@
                         gl.viewport(0, 0, screenWidth, screenHeight);
 
                         gl.blendFunc(gl.ONE, gl.ONE);
-                        Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
+                        Effect.Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
                     }
                 }
