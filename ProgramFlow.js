@@ -335,7 +335,7 @@
         GrowForest: function growForest(gl, renderResources, numTicks) {
             Controllers.forest.generate(numTicks, renderResources.currentTerrain);
             Controllers.forest.vegetationObjects.forEach(function(vegetation) {
-                vegetation._generateRenderMesh(gl);
+                vegetation._generateRenderMesh(gl, renderResources.currentTerrain);
             });
         },
 
@@ -531,7 +531,7 @@
             for (i = 0; i < forest.vegetationObjects.length; i++) {
                 vegetationObject = forest.vegetationObjects[i];
                 //vegetationObject.drawStructure(gl, shaderParams, false);
-                vegetationObject.draw(gl, shaderParams, false);
+                vegetationObject.draw(gl, shaderParams, resources.currentTerrain, false);
             }
 
             glHelper.disableAttribArrays(gl, shaderParams.attribArrays);

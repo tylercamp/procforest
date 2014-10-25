@@ -113,9 +113,9 @@
         this._needsBuild = false;
     }
 
-    Vegetation.prototype.draw = function(gl, shaderParams, autoAttribArrays_) {
+    Vegetation.prototype.draw = function(gl, shaderParams, fittingTerrain, autoAttribArrays_) {
         if (!this._renderMesh || this._needsBuild) {
-            this._generateRenderMesh(gl);
+            this._generateRenderMesh(gl, fittingTerrain);
         }
 
         if (autoAttribArrays_ === undefined)
@@ -147,8 +147,8 @@
         }
     };
 
-    Vegetation.prototype._generateRenderMesh = function(gl) {
-        var meshData = VegetationMeshBuilder.instance.buildMeshForVegetation(this);
+    Vegetation.prototype._generateRenderMesh = function(gl, fittingTerrain) {
+        var meshData = VegetationMeshBuilder.instance.buildMeshForVegetation(this, fittingTerrain);
         var colors = [];
 
         if (!this._renderMesh)
@@ -156,9 +156,13 @@
 
         var i;
         for (i = 0; i < meshData.vertices.length; i++) {
-            colors.push(0.5 * this.fingerprint.a + i / meshData.vertices.length);
-            colors.push(0.5 * this.fingerprint.b + i / meshData.vertices.length);
-            colors.push(0.5 * this.fingerprint.c + i / meshData.vertices.length);
+            //colors.push(0.5 * this.fingerprint.a + i / meshData.vertices.length);
+            //colors.push(0.5 * this.fingerprint.b + i / meshData.vertices.length);
+            //colors.push(0.5 * this.fingerprint.c + i / meshData.vertices.length);
+
+            colors.push(Math.random()/2 + 0.5);
+            colors.push(Math.random()/2 + 0.5);
+            colors.push(Math.random()/2 + 0.5);
         }
 
         this._renderMesh.setVertices({

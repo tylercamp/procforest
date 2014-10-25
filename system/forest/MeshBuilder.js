@@ -54,7 +54,7 @@
         return vertices;
     }
 
-    function generateVerticesForSegment(segment, seed) {
+    function generateVerticesForSegment(segment, seed, fittingTerrain) {
         var structureIndex, structurePiece, normPrevious, normCurrent, normNext, endVertices = [];
         for (structureIndex = 0; structureIndex < segment.structure.length - 1; structureIndex++) {
             structurePiece = {
@@ -82,7 +82,31 @@
             });
         }
 
-        var vertices = [], currentMesh, i;
+        var terrainSample, point, currentVertices, i;
+        //  fit end vertices to terrain where appropriate (cheap fitting, should project along the vector until intersection with terrain)
+        if (endVertices.length > 0) {
+            //  First point in the segment
+            point = segment.structure[0];
+            terrainSample = fittingTerrain.getValue(point.x, point.z);
+            currentVertices = endVertices[0].a;
+            if (point.y - terrainSample < 0.1) {
+                for (i = 0; i < currentVertices.length; i++) {
+                    currentVertices[i].y = fittingTerrain.getValue(currentVertices[i].x, currentVertices[i].z) - 0.1;
+                }
+            }
+
+            //  Last point in the segment
+            point = segment.structure[segment.structure.length - 1];
+            terrainSample = fittingTerrain.getValue(point.x, point.z);
+            currentVertices = endVertices[endVertices.length - 1].b;
+            if (point.y - terrainSample < 0.1) {
+                for (i = 0; i < currentVertices.length; i++) {
+                    currentVertices[i].y = fittingTerrain.getValue(currentVertices[i].x, currentVertices[i].z) - 0.1;
+                }
+            }
+        }
+
+        var vertices = [], currentMesh;
         for (structureIndex = 0; structureIndex < segment.structure.length - 1; structureIndex++) {
             currentMesh = triangulateExtrudedShape(endVertices[structureIndex].a, endVertices[structureIndex].b);
 
@@ -120,10 +144,10 @@
 
     }
 
-    VegetationMeshBuilder.prototype.buildMeshForVegetation = function(vegetation) {
+    VegetationMeshBuilder.prototype.buildMeshForVegetation = function(vegetation, fittingTerrain) {
         var i, segmentMeshes = [];
         for (i = 0; i < vegetation.structureSegments.length; i++) {
-            segmentMeshes.push(generateVerticesForSegment(vegetation.structureSegments[i], vegetation.seed));
+            segmentMeshes.push(generateVerticesForSegment(vegetation.structureSegments[i], vegetation.seed, fittingTerrain));
         }
 
         var j, currentMesh, compositeMesh = [];
