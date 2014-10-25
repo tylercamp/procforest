@@ -49,8 +49,20 @@
     //  Does constraint calculations for density requirements
 
     //  'parent' refers to the Vegetation object that invoked the spawning of 'vegetation'
-    function insertVegetationToForest(vegetationCollection, vegetation, parent) {
-        console.warn('insertVegetationToForest NYI');
+    function insertVegetationToForest(terrain, vegetationCollection, seed, parent) {
+        console.log('insertVegetationToForest');
+
+        var size = 20;
+        var newPosition = Math.vecSum(parent.position(), {
+            x: Math.random() * size - size / 2,
+            y: 0,
+            z: Math.random() * size - size / 2
+        });
+
+        newPosition.y = terrain.getValue(newPosition.x, newPosition.z);
+        var vegetation = Forest.Seed.plant(newPosition.x, newPosition.y, newPosition.z, terrain.getNormal(newPosition.x, newPosition.z), seed);
+        //vegetation.parent = parent;
+        vegetationCollection.push(vegetation);
     }
 
     function Forest() {
@@ -95,15 +107,17 @@
                 offspring = vegetation.grow(terrain);
                 //  Add offspring to the forest if any were generated
                 if (offspring) {
-                    newVegetation.push({
-                        offspring: offspring,
-                        parent: vegetation
+                    offspring.forEach(function (singleOffspring) {
+                        newVegetation.push({
+                            seed: singleOffspring,
+                            parent: vegetation
+                        });
                     });
                 }
             }
 
             for (i = 0; i < newVegetation.length; i++) {
-                insertVegetationToForest(vegetationObjects, newVegetation[i].offspring, newVegetation[i].parent);
+                insertVegetationToForest(terrain, vegetationObjects, newVegetation[i].seed, newVegetation[i].parent);
             }
         });
 

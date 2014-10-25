@@ -86,9 +86,20 @@
                 relativeChange = Math.normal(Math.vecLerp(0.2 * fingerprint.a * (1 / (segment.subdivisionIndex + 1)), relativeChange, { x: 0, y: 1, z: 0 }));
                 //Math.normalize(relativeChange);
 
+                var currentSize = segment.calculateArcLength();
+                var offspring = null;
+                if (segment.subdivisionIndex === 0) {
+                    if (Math.random() * currentSize > (5.0 * fingerprint.a + 5.0))
+                        offspring = [Seeds.root];
+                }
+                else {
+
+                }
+
                 return {
                     newSegments: newSegments,
-                    relativeChange: relativeChange
+                    relativeChange: relativeChange,
+                    offspring: offspring
                 };
 
 //                return {

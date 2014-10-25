@@ -110,10 +110,23 @@
 
         this._renderMesh = null;
         this._structureMesh = null;
-        this._needsBuild = false;
+        this._needsBuild = true;
     }
 
+    Vegetation.prototype.position = function() {
+        if (this.structureSegments.length) {
+            if (this.structureSegments[0].structure.length) {
+                return this.structureSegments[0].structure[0];
+            }
+        }
+
+        return null;
+    };
+
     Vegetation.prototype.draw = function(gl, shaderParams, fittingTerrain, autoAttribArrays_) {
+        if (this.structureSegments[0].structure.length <= 1)
+            return;
+
         if (!this._renderMesh || this._needsBuild) {
             this._generateRenderMesh(gl, fittingTerrain);
         }
@@ -227,7 +240,7 @@
             console.error('Cannot grow vegetation without a base segment or seed, try creating vegetation using Forest.Seed.plant(...)');
         }
 
-        var newSegments = [];
+        var newSegments = [], offspring = [];
 
         var i, segment, growth, lastVertex, nextToLastVertex, currentDirection;
         for (i = 0; i < structureSegments.length; i++) {
@@ -254,7 +267,9 @@
             growth = this.seed.growth(terrain, segment, this.fingerprint, currentDirection) || {};
 
             if (growth.offspring) {
-                console.log('Offspring generation NYI');
+                growth.offspring.forEach(function (singleOffspring) {
+                    offspring.push(singleOffspring);
+                });
             }
 
             if (growth.relativeChange) {
@@ -276,10 +291,6 @@
                     rootStructureB = segment.structure[rootStructureIndex + 1];
                     segmentInfo.offset -= rootStructureIndex / (segment.structure.length);
                     segmentInfo.offset *= segment.structure.length;
-//                    if (segmentInfo.offset < 0)
-//                        debugger;
-//                    if (segmentInfo.offset > 1)
-//                        debugger;
 
                     newSegment.structure.push(Math.vecLerp(segmentInfo.offset, rootStructureA, rootStructureB));
                     newSegments.push(newSegment);
@@ -296,6 +307,9 @@
         for (i = 0; i < newSegments.length; i++) {
             structureSegments.push(newSegments[i]);
         }
+
+        if (offspring.length)
+            return offspring;
     };
 
     //  For debugging
