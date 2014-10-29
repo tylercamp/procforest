@@ -41,6 +41,9 @@
             <tr><td>Framebuffers</td><td id="stats-framebuffers"></td></tr>
             <tr><td>Shader Programs</td><td id="stats-programs"></td></tr>
         </table>
+        <br>
+        Probability field<br>
+        <canvas id="probability-field" width="300" height="300"></canvas>
     </div>
 
     <!-- Settings GUI -->
@@ -108,6 +111,7 @@
     <script src="system/forest/Vegetation.js"></script>
     <script src="system/forest/Seed.js"></script>
     <script src="system/forest/MeshBuilder.js"></script>
+    <script src="system/forest/ProbabilityField.js"></script>
     <script src="system/Mesh.js"></script>
     <script src="system/ParticleSystem.js"></script>
 
@@ -278,7 +282,7 @@
                             Controllers.performance.beginMonitoring();
 
                             Controllers.keyboard.onKey(' ', function() {
-                                Controllers.forest.timeline.tick();
+                                Controllers.forest.timeline.tick(5);
                             });
 
                             runApp(gl, renderFunc, ProcForest.Settings, renderResources, 0);

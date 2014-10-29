@@ -50,8 +50,6 @@
 
     //  'parent' refers to the Vegetation object that invoked the spawning of 'vegetation'
     function insertVegetationToForest(terrain, vegetationCollection, seed, parent) {
-        console.log('insertVegetationToForest');
-
         var size = 20;
         var newPosition = Math.vecSum(parent.position(), {
             x: Math.random() * size - size / 2,
@@ -61,17 +59,30 @@
 
         newPosition.y = terrain.getValue(newPosition.x, newPosition.z);
         var vegetation = Forest.Seed.plant(newPosition.x, newPosition.y, newPosition.z, terrain.getNormal(newPosition.x, newPosition.z), seed);
-        //vegetation.parent = parent;
         vegetationCollection.push(vegetation);
+
+        return vegetation;
     }
 
     function Forest() {
         this.vegetationObjects = [];
+        this.probabilityFields = null;
+
+        this.defaultProbabilityFunction = {
+            type: 'no-op'
+        };
     }
 
     Forest.prototype.generate = function(numGrowthTicks, terrain) {
         this.timeline = new Timeline();
         this.vegetationObjects = [];
+        this.probabilityFields = new ProbabilityField(Math.floor(terrain.renderWidth() * 0.5), Math.floor(terrain.renderHeight() * 0.5));
+
+        /***** DEBUG UI STUFF *****/
+        var probabilityFieldUI = document.querySelector('#probability-field');
+        probabilityFieldUI.width = this.probabilityFields.width;
+        probabilityFieldUI.height = this.probabilityFields.height;
+
 
         var maxSeedsDistance = ProcForest.Settings.Forest.maxSeedsDistance;
         var spread = { x: 0, y: 0 };
@@ -95,6 +106,17 @@
 
         console.log('Planted ' + vegetationObjects.length + ' seeds in the forest');
 
+        var currentPosition;
+        for (var i = 0; i < vegetationObjects.length; i++) {
+            currentPosition = vegetationObjects[i].position();
+            currentPosition.x *= this.probabilityFields.width / terrainWidth;
+            currentPosition.z *= this.probabilityFields.height / terrainHeight;
+            this.probabilityFields.composite({ x: currentPosition.x, y: currentPosition.z }, vegetationObjects[i].seed.probabilityFieldFunction);
+        }
+        console.log('Generated initial probability field');
+        this.probabilityFields.copyToCanvas(probabilityFieldUI);
+
+        var probabilityFields = this.probabilityFields;
         //  Configure timeline onTick
         this.timeline.onTick(function (tick) {
             //  Don't insert offspring until we're done processing
@@ -117,7 +139,16 @@
             }
 
             for (i = 0; i < newVegetation.length; i++) {
-                insertVegetationToForest(terrain, vegetationObjects, newVegetation[i].seed, newVegetation[i].parent);
+                var vegetationInstance = insertVegetationToForest(terrain, vegetationObjects, newVegetation[i].seed, newVegetation[i].parent);
+                var currentPosition = vegetationInstance.position();
+                currentPosition.x *= probabilityFields.width / terrainWidth;
+                currentPosition.z *= probabilityFields.height / terrainHeight;
+                probabilityFields.composite({ x: currentPosition.x, y: currentPosition.z }, vegetationInstance.seed.probabilityFieldFunction);
+            }
+
+            if (newVegetation.length) {
+                console.log('Updating probability field');
+                probabilityFields.copyToCanvas(document.querySelector('#probability-field'));
             }
         });
 

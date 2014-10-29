@@ -12,6 +12,13 @@
             radialGenerationAccuracy: 15,
             terrainAlignmentFactor: 0.3,
 
+            probabilityFieldFunction: {
+                type: 'linear',
+                holeRadius: 2,
+                maxDistance: 10,
+                scale: 3
+            },
+
             probability: function() {
                 return ProcForest.Settings.SeedProbabilities.wispTree;
             },
@@ -57,6 +64,13 @@
             name: 'tree',
             radialGenerationAccuracy: 15,
             terrainAlignmentFactor: 0.5,
+
+            probabilityFieldFunction: {
+                type: 'linear',
+                holeRadius: 2,
+                maxDistance: 10,
+                scale: 4
+            },
 
             probability: function() {
                 return ProcForest.Settings.SeedProbabilities.tree;
@@ -128,6 +142,13 @@
             name: 'overgrowth root',
             radialGenerationAccuracy: 15,
             terrainAligmentFactor: 1,
+
+            probabilityFieldFunction: {
+                type: 'linear',
+                holeRadius: 0.5,
+                maxDistance: 2,
+                scale: 1
+            },
 
             probability: function () {
                 return ProcForest.Settings.SeedProbabilities.root;

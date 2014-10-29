@@ -114,13 +114,23 @@
     }
 
     Vegetation.prototype.position = function() {
+        var result = null;
         if (this.structureSegments.length) {
             if (this.structureSegments[0].structure.length) {
-                return this.structureSegments[0].structure[0];
+                result = this.structureSegments[0].structure[0];
             }
         }
 
-        return null;
+        if (result) {
+            //  Make copy
+            result = {
+                x: result.x,
+                y: result.y,
+                z: result.z
+            };
+        }
+
+        return result;
     };
 
     Vegetation.prototype.draw = function(gl, shaderParams, fittingTerrain, autoAttribArrays_) {

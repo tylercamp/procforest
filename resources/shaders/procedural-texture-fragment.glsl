@@ -8,20 +8,20 @@ uniform float u_NoiseParameter;
 
 float snoise(vec4 v);
 
+float band(float value, float numLevels) {
+    return floor(value * (numLevels + 1.0)) / numLevels;
+}
 
 void main(void) {
     vec4 samplePos;
     samplePos.xyz = v_Position;
     samplePos.w = u_NoiseParameter;
-    float noiseValue = snoise(samplePos*0.5) + snoise(samplePos*0.25) + snoise(samplePos*0.0625);
-    noiseValue = noiseValue * 0.5 + 1.0;
+    float noiseValue = snoise(samplePos*0.25);
+    noiseValue = band(noiseValue * 0.5 + 1.0, 5.0);
 
-    gl_FragColor = v_Color * noiseValue;
+    gl_FragColor.rgb = vec3(0.52, 0.419, 0.165) * (noiseValue / 2.0 + 0.5) * v_Color.rgb;
+    //gl_FragColor.rgb *= 0.5;
     gl_FragColor.a = 1.0;
-
-    //gl_FragColor.rgb = vec3(0.52, 0.419, 0.165) * (noiseValue / 2.0 + 0.75);
-    //gl_FragColor.a = 1.0;
-    //gl_FragColor *= v_Color;
 }
 
 
@@ -51,10 +51,10 @@ void main(void) {
 //
 
 vec4 mod289(vec4 x) {
-  return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  return x - floor(x * 0.003460207612) * 289.0; }
 
 float mod289(float x) {
-  return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  return x - floor(x * 0.003460207612) * 289.0; }
 
 vec4 permute(vec4 x) {
      return mod289(((x*34.0)+1.0)*x);
