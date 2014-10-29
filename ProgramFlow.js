@@ -80,6 +80,7 @@
                 gl.useProgram(this.particleShader);
                 this.particleShaderParams = {
                     a_Vertex: gl.getAttribLocation(this.particleShader, "a_Vertex"),
+                    a_Color: gl.getAttribLocation(this.particleShader, "a_Color"),
 
                     u_ModelViewMatrix: gl.getUniformLocation(this.particleShader, "u_ModelViewMatrix"),
                     u_ProjectionMatrix: gl.getUniformLocation(this.particleShader, "u_ProjectionMatrix")
@@ -152,7 +153,9 @@
             Controllers.particleSystem = new ParticleSystem(gl);
 
             Controllers.keyboard.onKey('P', function() {
-                Controllers.particleSystem.generateParticles(10, 10, 60, 50, 60);
+                var terrainWidth = renderResources.currentTerrain.renderWidth();
+                var terrainHeight = renderResources.currentTerrain.renderHeight();
+                Controllers.particleSystem.generateParticles(terrainWidth *.5, 0, terrainHeight *.5, 50, 60);
             });
 
             Controllers.time.onFpsChange(function (newFps) {
@@ -549,10 +552,12 @@
 
             gl.useProgram(resources.particleShader);
             gl.enableVertexAttribArray(shaderParams.a_Vertex);
+            gl.enableVertexAttribArray(shaderParams.a_Color);
             gl.uniformMatrix4fv(shaderParams.u_ModelViewMatrix, false, resources.modelViewMatrix.elements);
             gl.uniformMatrix4fv(shaderParams.u_ProjectionMatrix, false, resources.projectionMatrix.elements);
-            particleSystem.draw(gl, shaderParams.a_Vertex);
+            particleSystem.draw(gl, shaderParams.a_Vertex, shaderParams.a_Color);
             gl.disableVertexAttribArray(shaderParams.a_Vertex);
+            gl.disableVertexAttribArray(shaderParams.a_Color);
         },
 
         RenderClouds: function renderClouds(gl, resources) {
