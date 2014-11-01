@@ -21,8 +21,22 @@
         return new Float32Array(result);
     }
 
+    function filterColors(arrayOfColors, lifetimes) {
+        var result = [], i;
+        for (i = 0; i < lifetimes.length; i++) {
+            if (lifetimes[i] > 0) {
+                result.push(arrayOfColors[i*4 + 0]);
+                result.push(arrayOfColors[i*4 + 1]);
+                result.push(arrayOfColors[i*4 + 2]);
+                result.push(arrayOfColors[i*4 + 3]);
+            }
+        }
+
+        return new Float32Array(result);
+    }
+
     function ParticleSystem(gl) {
-        this.maxParticles = 50000;
+        this.maxParticles = 10000;
         this.particleArray = [];
         this.velocity = [];
         this.lifeTimes = [];
@@ -123,7 +137,7 @@
     ParticleSystem.prototype.draw = function(gl, a_Vertex, a_Color) {
         /*CONVERT*/
         var particleVerts = createArrayFromVectors(this.particleArray, this.lifeTimes);
-        var particleColor = new Float32Array(this.particleColors);
+        var particleColor = filterColors(this.particleColors, this.lifeTimes);
 
         // Bind the buffer object to target
         gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);

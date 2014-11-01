@@ -155,7 +155,9 @@
             Controllers.keyboard.onKey('P', function() {
                 var terrainWidth = renderResources.currentTerrain.renderWidth();
                 var terrainHeight = renderResources.currentTerrain.renderHeight();
-                Controllers.particleSystem.generateParticles(terrainWidth *.5, 0, terrainHeight *.5, 50, 60);
+                var px = terrainWidth * 0.5;
+                var py = terrainHeight * 0.5;
+                Controllers.particleSystem.generateParticles(px, renderResources.currentTerrain.getValue(px, py) + 1, py, 50, 60);
             });
 
             Controllers.time.onFpsChange(function (newFps) {
