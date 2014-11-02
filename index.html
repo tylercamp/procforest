@@ -349,6 +349,8 @@
                 Controllers.audioProcessor.processCurrentWaveform();
                 $('#audio-factor').text(Controllers.audioProcessor.calculateAverageAmplitude().toPrecision(2));
 
+                Controllers.particleSystem.update();
+
 
                 //  Clear screen-buffer
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);

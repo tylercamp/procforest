@@ -559,7 +559,6 @@
             var shaderParams = resources.particleShaderParams;
 
             //particleSystem.generateParticles(60, 50, 10, 0);
-            particleSystem.update();
 
             gl.useProgram(resources.particleShader);
             gl.enableVertexAttribArray(shaderParams.a_Vertex);
