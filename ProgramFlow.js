@@ -153,14 +153,6 @@
             Controllers.particleSystem = new ParticleSystem(gl);
             Controllers.audioProcessor = new AudioProcessor();
 
-            Controllers.keyboard.onKey('P', function() {
-                var terrainWidth = renderResources.currentTerrain.renderWidth();
-                var terrainHeight = renderResources.currentTerrain.renderHeight();
-                var px = terrainWidth * 0.5;
-                var py = terrainHeight * 0.5;
-                Controllers.particleSystem.generateParticles(px, renderResources.currentTerrain.getValue(px, py) + 1, py, 50, 60);
-            });
-
             Controllers.time.onFpsChange(function (newFps) {
                 $('#fps').text(newFps);
             });
@@ -184,9 +176,7 @@
             renderResources.skybox.generateBuffers(gl);
 
             Controllers.audioProcessor.init();
-            Controllers.audioProcessor.setAudioData(resources.song_1, function() {
-                Controllers.audioProcessor.playCurrentAudio();
-            });
+            Controllers.audioProcessor.setAudioData(resources.song_1);
 
             return gl;
         },
@@ -559,8 +549,6 @@
             var particleSystem = Controllers.particleSystem;
             var shaderParams = resources.particleShaderParams;
 
-            //particleSystem.generateParticles(60, 50, 10, 0);
-
             gl.useProgram(resources.particleShader);
             gl.enableVertexAttribArray(shaderParams.a_Vertex);
             gl.enableVertexAttribArray(shaderParams.a_Color);
@@ -569,6 +557,27 @@
             particleSystem.draw(gl, shaderParams.a_Vertex, shaderParams.a_Color);
             gl.disableVertexAttribArray(shaderParams.a_Vertex);
             gl.disableVertexAttribArray(shaderParams.a_Color);
+        },
+
+        UpdateParticles: function updateParticles(gl, resources) {
+            var particleSystem = Controllers.particleSystem;
+            var terrain = resources.currentTerrain;
+
+            //  Spawn particles randomly over the terrain
+            var numParticles = 5;
+            var i, x, y, z, xnorm, znorm;
+            for (i = 0; i < numParticles; i++) {
+                x = Math.random() * terrain.renderWidth();
+                z = Math.random() * terrain.renderHeight();
+                y = terrain.getValue(x, z) + Math.random() * 15 + 0.25;
+
+                xnorm = x / terrain.renderWidth();
+                znorm = z / terrain.renderHeight();
+
+                particleSystem.generateParticles(x, y, z, 1, 10, { r: Math.random(), g: Math.random(), b: Math.random() });
+            }
+
+            particleSystem.update();
         },
 
         RenderClouds: function renderClouds(gl, resources) {

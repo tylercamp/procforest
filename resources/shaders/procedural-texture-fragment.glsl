@@ -17,9 +17,11 @@ void main(void) {
     samplePos.xyz = v_Position;
     samplePos.w = u_NoiseParameter;
     float noiseValue = snoise(samplePos*0.25);
-    noiseValue = band(noiseValue * 0.5 + 1.0, 5.0);
+    //noiseValue = band(noiseValue * 0.5 + 1.0, 5.0);
+    noiseValue = noiseValue * 0.5 + 1.0;
 
-    gl_FragColor.rgb = vec3(0.52, 0.419, 0.165) * (noiseValue / 2.0 + 0.5) * v_Color.rgb;
+    gl_FragColor.rgb = (noiseValue / 1.0 + 0.0) * v_Color.rgb;
+    //gl_FragColor.rgb = vec3(0.52, 0.419, 0.165) * (noiseValue / 2.0 + 0.5) * v_Color.rgb;
     //gl_FragColor.rgb *= 0.5;
     gl_FragColor.a = 1.0;
 }

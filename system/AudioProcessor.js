@@ -28,7 +28,7 @@
         this._playbackBuffer.connect(this._audioCtx.destination);
         this._playbackBuffer.connect(this._analyser);
 
-        this.amplitudeSmoothing = 5;
+        this.amplitudeSmoothing = 6;
         this._amplitudeHistory = [];
     };
 
@@ -63,7 +63,7 @@
 
         this._amplitudeHistory.push(max);
         if (this._amplitudeHistory.length > this.amplitudeSmoothing)
-            this._amplitudeHistory.splice(0, 1);
+            this._amplitudeHistory.splice(0, this._amplitudeHistory.length - this.amplitudeSmoothing);
     };
 
     AudioProcessor.prototype.calculateAverageAmplitude = function() {

@@ -179,13 +179,13 @@
 
         var i;
         for (i = 0; i < meshData.vertices.length; i++) {
-            //colors.push(0.5 * this.fingerprint.a + i / meshData.vertices.length);
-            //colors.push(0.5 * this.fingerprint.b + i / meshData.vertices.length);
-            //colors.push(0.5 * this.fingerprint.c + i / meshData.vertices.length);
+            colors.push(0.5 * this.fingerprint.a + i / meshData.vertices.length);
+            colors.push(0.5 * this.fingerprint.b + i / meshData.vertices.length);
+            colors.push(0.5 * this.fingerprint.c + i / meshData.vertices.length);
 
-            colors.push(Math.random()/2 + 0.5);
-            colors.push(Math.random()/2 + 0.5);
-            colors.push(Math.random()/2 + 0.5);
+            //colors.push(Math.random()/2 + 0.5);
+            //colors.push(Math.random()/2 + 0.5);
+            //colors.push(Math.random()/2 + 0.5);
         }
 
         this._renderMesh.setVertices({

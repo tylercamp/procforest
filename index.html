@@ -242,7 +242,8 @@
 
 
 
-                song_1: 'resources/audio/Magic Man - Paris.mp3'
+                song_1: 'resources/audio/Magic Man - Paris.mp3',
+                song_2: 'resources/audio/Lemaitre - Coffee Table.mp3'
 
             });
 
@@ -288,6 +289,7 @@
                         initFunc: function() {
                             hideLoadingWindow();
                             Controllers.performance.beginMonitoring();
+                            Controllers.audioProcessor.playCurrentAudio();
 
                             Controllers.keyboard.onKey(' ', function() {
                                 Controllers.forest.timeline.tick(5);
@@ -346,10 +348,12 @@
                 var bloomBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight, "Bloom");
 
 
+                //  Attempt to smooth amplitudes over ~100ms
+                Controllers.audioProcessor.amplitudeSmoothing = Math.ceil(0.1 / (Controllers.time.getDelta()));
                 Controllers.audioProcessor.processCurrentWaveform();
                 $('#audio-factor').text(Controllers.audioProcessor.calculateAverageAmplitude().toPrecision(2));
 
-                Controllers.particleSystem.update();
+                ProgramFlow.UpdateParticles(gl, resources);
 
 
                 //  Clear screen-buffer

@@ -73,7 +73,7 @@
         }
 
     }
-    ParticleSystem.prototype.generateParticles = function(positionX, positionY, positionZ, count, lifeTime) {
+    ParticleSystem.prototype.generateParticles = function(positionX, positionY, positionZ, count, lifeTime, color) {
         var numCreated = 0;
         for(var l = 0; l < this.maxParticles && numCreated < count; l++) {
             if (this.lifeTimes[l] == 0) {
@@ -81,6 +81,9 @@
                 this.particleArray[l].elements[0] = positionX;
                 this.particleArray[l].elements[1] = positionY;
                 this.particleArray[l].elements[2] = positionZ;
+                this.particleColors[l*4 + 0] = color.r;
+                this.particleColors[l*4 + 1] = color.g;
+                this.particleColors[l*4 + 2] = color.b;
                 this.lifeTimes[l] = lifeTime;
                 this.activeParticles++;
                 numCreated++;
