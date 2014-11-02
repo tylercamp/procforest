@@ -168,6 +168,7 @@
             ProgramFlow.InitializeResources(gl, resources, renderResources, canvas);
 
             gl.enable(gl.DEPTH_TEST);
+            gl.depthFunc(gl.LEQUAL);
             gl.enable(gl.CULL_FACE);
 
             //renderResources.skybox = new Skybox(resources.skyboxImage);

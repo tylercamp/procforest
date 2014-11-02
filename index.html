@@ -374,15 +374,11 @@
 
                 if (ProcForest.Settings.useBloom) {
                     { //  Store emissive components in renderbuffer
-                        gl.depthFunc(gl.LEQUAL);
                         gl.bindFramebuffer(gl.FRAMEBUFFER, screenBuffer.fbo);
-
                         gl.clearColor(0, 0, 0, 0);
                         gl.clear(gl.COLOR_BUFFER_BIT);
 
                         ProgramFlow.RenderEmissive(gl, resources);
-
-                        gl.depthFunc(gl.LESS);
                     }
 
                     { // Re-render the rasterized emissive components into a smaller framebuffer
@@ -397,7 +393,14 @@
 
                     { // Render blurred version of emissive components
                         gl.blendFunc(gl.ONE, gl.ONE);
-                        Effect.Blur.render(gl, null, screenWidth, screenHeight, emissiveBuffer.renderTexture, bloomWidth, bloomHeight, Controllers.audioProcessor.calculateAverageAmplitude());
+                        Effect.Blur.render(gl, bloomBuffer.fbo, bloomWidth, bloomHeight, emissiveBuffer.renderTexture, bloomWidth, bloomHeight, true);
+
+                        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                        gl.viewport(0, 0, screenWidth, screenHeight);
+
+                        Effect.TexturePassthrough.bind(gl, bloomBuffer.renderTexture);
+                        FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params);
+
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
                     }
                 }

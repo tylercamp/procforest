@@ -133,7 +133,6 @@
 
             autoClear_ = autoClear_ || false;
 
-            gl.disable(gl.DEPTH_TEST);
             gl.activeTexture(gl.TEXTURE0);
 
             gl.viewport(0, 0, sourceWidth, sourceHeight);
@@ -177,8 +176,6 @@
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             Effect.TexturePassthrough.bind(gl, vBuffer.renderTexture);
             screenQuad.render(gl, Effect.TexturePassthrough.params);
-
-            gl.enable(gl.DEPTH_TEST);
         }
     };
 
