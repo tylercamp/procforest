@@ -399,7 +399,8 @@
                         gl.viewport(0, 0, screenWidth, screenHeight);
 
                         Effect.TexturePassthrough.bind(gl, bloomBuffer.renderTexture);
-                        FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params);
+                        var bloomIntensity = Math.pow(Controllers.audioProcessor.calculateAverageAmplitude(), 1.5);
+                        FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params, { a: bloomIntensity });
 
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
                     }

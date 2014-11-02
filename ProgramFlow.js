@@ -185,7 +185,7 @@
 
             Controllers.audioProcessor.init();
             Controllers.audioProcessor.setAudioData(resources.song_1, function() {
-                //Controllers.audioProcessor.playCurrentAudio();
+                Controllers.audioProcessor.playCurrentAudio();
             });
 
             return gl;
@@ -582,14 +582,14 @@
             this.RenderTerrain(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
             this.RenderLakes(gl, resources);
-            this.RenderForest(gl, resources, 0.5);
+            this.RenderForest(gl, resources, 0.25);
             this.RenderParticles(gl, resources);
             this.RenderClouds(gl, resources);
         },
 
         RenderEmissive: function renderEmissiveElements(gl, resources) {
             //this.RenderSkybox(gl, resources);
-            this.RenderForest(gl, resources, 1.5);
+            this.RenderForest(gl, resources, 1);
             this.RenderParticles(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
         }

@@ -150,7 +150,7 @@
                 //gl.uniform1f(hShaderParams.u_IntensityRamp, this.intensityRamp);
                 gl.uniform1f(hShaderParams.u_PixelSize, 1 / sourceWidth * this.sampleStride);
                 //gl.uniform1fv(hShaderParams.u_Kernel, this._currentKernel);
-                screenQuad.render(gl, hShaderParams.a_Vertex, hShaderParams.a_TexCoord);
+                screenQuad.render(gl, hShaderParams);
             }
 
             { // Vertical pass
@@ -165,7 +165,7 @@
                 //gl.uniform1f(vShaderParams.u_IntensityRamp, this.intensityRamp);
                 gl.uniform1f(vShaderParams.u_PixelSize, 1 / sourceHeight * this.sampleStride);
                 //gl.uniform1fv(vShaderParams.u_Kernel, this._currentKernel);
-                screenQuad.render(gl, vShaderParams.a_Vertex, vShaderParams.a_TexCoord);
+                screenQuad.render(gl, vShaderParams);
             }
 
 

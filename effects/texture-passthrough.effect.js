@@ -15,7 +15,10 @@
             gl.useProgram(this.program);
             this.params.a_Vertex = gl.getAttribLocation(this.program, 'a_Vertex');
             this.params.a_TexCoord = gl.getAttribLocation(this.program, 'a_ScreenTexCoord');
+            this.params.a_Color = gl.getAttribLocation(this.program, 'a_Color');
             this.params.u_ScreenTexture = gl.getUniformLocation(this.program, 'u_ScreenTexture');
+
+            this._colorBuffer = gl.createBuffer();
         },
 
         bind: function (gl, textureObject) {
