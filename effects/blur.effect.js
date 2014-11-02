@@ -50,7 +50,7 @@
     window.Effect = window.Effect || {};
     
     Effect.Blur = {
-        sampleStride: 3,
+        sampleStride: 2,
         intensityRamp: 1.5,
         intensityFactor: 1.5,
 
@@ -127,7 +127,7 @@
             gl.enable(gl.BLEND);
         },
 
-        render: function generateGaussianBlur(gl, target, sourceTexture, sourceWidth, sourceHeight, autoClear_) {
+        render: function generateGaussianBlur(gl, target, targetWidth, targetHeight, sourceTexture, sourceWidth, sourceHeight, autoClear_) {
             var hBuffer = intermediateBuffers.horizontal.getBuffer(gl, sourceWidth, sourceHeight);
             var vBuffer = intermediateBuffers.vertical.getBuffer(gl, sourceWidth, sourceHeight);
 
@@ -135,6 +135,8 @@
 
             gl.disable(gl.DEPTH_TEST);
             gl.activeTexture(gl.TEXTURE0);
+
+            gl.viewport(0, 0, sourceWidth, sourceHeight);
 
 
             { // Horizontal pass
@@ -170,6 +172,7 @@
 
             //  Render to target
             gl.bindFramebuffer(gl.FRAMEBUFFER, target);
+            gl.viewport(0, 0, targetWidth, targetHeight);
             if (autoClear_)
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             Effect.TexturePassthrough.bind(gl, vBuffer.renderTexture);

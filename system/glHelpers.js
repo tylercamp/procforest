@@ -27,13 +27,10 @@
                 var uri = resourceNameMapping[resourceName];
 
                 if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(uri)) {
-                    //console.log('Matched image', uri);
-
+                    //  Image data (should be processed/loaded into an image object for WebGL use)
                     var image = new Image();
 
                     image.onload = function () {
-                        //console.log('Polled image w', image.width, 'h', image.height);
-
                         resourceNames.splice(resourceNames.indexOf(resourceName),  1);
                         result[resourceName] = this;
 
@@ -43,10 +40,23 @@
 
                     image.src = uri;
                 }
-                else {
-                    $.get(uri, null, function (resourceData) {
-                        //console.log('Finished polling ' + resourceName, arguments);
+                else if ((/\.(mp3)$/i).test(uri)) {
+                    //  Audio data (needs to be polled as arraybuffer, jQuery has issues with it)
+                    var req = new XMLHttpRequest();
+                    req.open("GET", uri, true);
+                    req.responseType = "arraybuffer";
+                    req.onload = function() {
+                        resourceNames.splice(resourceNames.indexOf(resourceName), 1);
+                        result[resourceName] = req.response;
 
+                        if (resourceNames.length === 0)
+                            onComplete(result);
+                    };
+                    req.send();
+                }
+                else {
+                    //  Other misc. data (can use general query)
+                    $.get(uri, null, function (resourceData) {
                         resourceNames.splice(resourceNames.indexOf(resourceName), 1);
                         result[resourceName] = resourceData;
 

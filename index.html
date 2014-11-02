@@ -18,6 +18,7 @@
         <br>
         Display Resolution: <span id="res-x"></span>x<span id="res-y"></span><br>
         <span id="fps">0</span> FPS<br>
+        Audio Factor: <span id="audio-factor"></span>
         <br>
         Num Particles: <span id="num-particles"></span><br>
         <br>
@@ -114,6 +115,7 @@
     <script src="system/forest/ProbabilityField.js"></script>
     <script src="system/Mesh.js"></script>
     <script src="system/ParticleSystem.js"></script>
+    <script src="system/AudioProcessor.js"></script>
 
     <script src="effects/blur.effect.js"></script>
     <script src="effects/texture-passthrough.effect.js"></script>
@@ -176,7 +178,8 @@
             bufferSource: new BufferCollection(),
             forest: null,
             performance: null,
-            particleSystem: null
+            particleSystem: null,
+            audioProcessor: null
         };
 
         (function() {
@@ -234,7 +237,12 @@
                 skybox_Right: 'resources/skybox/DarkStormyRight2048.jpg',
                 skybox_Top: 'resources/skybox/DarkStormyUp2048.jpg',
                 skybox_Back: 'resources/skybox/DarkStormyBack2048.jpg',
-                skybox_Bottom: 'resources/skybox/DarkStormyDown2048.jpg'
+                skybox_Bottom: 'resources/skybox/DarkStormyDown2048.jpg',
+
+
+
+
+                song_1: 'resources/audio/Magic Man - Paris.mp3'
 
             });
 
@@ -334,8 +342,12 @@
                 var bloomWidth = Math.ceil(screenWidth * bloomSizeFactor), bloomHeight = Math.ceil(screenHeight * bloomSizeFactor);
 
                 var screenBuffer = Controllers.bufferSource.getBuffer(gl, screenWidth, screenHeight, "ScreenBuffer");
-                var bloomBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight);
+                var emissiveBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight, "Emissive");
+                var bloomBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight, "Bloom");
 
+
+                Controllers.audioProcessor.processCurrentWaveform();
+                $('#audio-factor').text(Controllers.audioProcessor.calculateAverageAmplitude().toPrecision(2));
 
 
                 //  Clear screen-buffer
@@ -372,7 +384,7 @@
                     }
 
                     { // Re-render the rasterized emissive components into a smaller framebuffer
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, bloomBuffer.fbo);
+                        gl.bindFramebuffer(gl.FRAMEBUFFER, emissiveBuffer.fbo);
                         gl.viewport(0, 0, bloomWidth, bloomHeight);
 
                         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -382,11 +394,8 @@
                     }
 
                     { // Render blurred version of emissive components
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                        gl.viewport(0, 0, screenWidth, screenHeight);
-
                         gl.blendFunc(gl.ONE, gl.ONE);
-                        Effect.Blur.render(gl, null, bloomBuffer.renderTexture, screenWidth, screenHeight);
+                        Effect.Blur.render(gl, null, screenWidth, screenHeight, emissiveBuffer.renderTexture, bloomWidth, bloomHeight, Controllers.audioProcessor.calculateAverageAmplitude());
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
                     }
                 }

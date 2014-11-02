@@ -151,6 +151,7 @@
             Controllers.performance = new PerformanceMonitor(gl);
             Controllers.forest = new Forest();
             Controllers.particleSystem = new ParticleSystem(gl);
+            Controllers.audioProcessor = new AudioProcessor();
 
             Controllers.keyboard.onKey('P', function() {
                 var terrainWidth = renderResources.currentTerrain.renderWidth();
@@ -180,6 +181,11 @@
             ]);
 
             renderResources.skybox.generateBuffers(gl);
+
+            Controllers.audioProcessor.init();
+            Controllers.audioProcessor.setAudioData(resources.song_1, function() {
+                //Controllers.audioProcessor.playCurrentAudio();
+            });
 
             return gl;
         },
@@ -510,9 +516,11 @@
 
         },
 
-        RenderForest: function renderForest(gl, resources) {
+        RenderForest: function renderForest(gl, resources, brightnessFactor_) {
             if (!ProcForest.Settings.drawForest)
                 return;
+
+            brightnessFactor_ = brightnessFactor_ || 1;
 
             var forest = Controllers.forest;
 
@@ -528,6 +536,7 @@
             gl.uniformMatrix4fv(shaderParams.u_ProjectionMatrix, false, resources.projectionMatrix.elements);
 
             gl.uniform1f(shaderParams.u_NoiseParameter, ProcForest.Settings.textureGenSeed);
+            gl.uniform1f(shaderParams.u_BrightnessFactor, brightnessFactor_);
             ProcForest.Settings.textureGenSeed += Controllers.time.getDelta() * ProcForest.Settings.textureVelocity;
 
             glHelper.enableAttribArrays(gl, shaderParams.attribArrays);
@@ -573,14 +582,14 @@
             this.RenderTerrain(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
             this.RenderLakes(gl, resources);
-            this.RenderForest(gl, resources);
+            this.RenderForest(gl, resources, 0.5);
             this.RenderParticles(gl, resources);
             this.RenderClouds(gl, resources);
         },
 
         RenderEmissive: function renderEmissiveElements(gl, resources) {
             //this.RenderSkybox(gl, resources);
-            //this.RenderForest(gl, resources);
+            this.RenderForest(gl, resources, 1.5);
             this.RenderParticles(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
         }
