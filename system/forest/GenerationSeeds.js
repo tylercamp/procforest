@@ -55,8 +55,8 @@
 //                };
             },
 
-            shape: function() {
-                console.error('shape NYI');
+            meshPoint: function(basePoint, normal, progression, meshHelper) {
+                return meshHelper.calculateRotatedPoint(basePoint, normal, progression * 360, 0.3);
             }
         },
 
@@ -123,8 +123,8 @@
 //                };
             },
 
-            shape: function() {
-                console.error('shape NYI');
+            meshPoint: function(basePoint, normal, progression, meshHelper) {
+                return meshHelper.calculateRotatedPoint(basePoint, normal, progression * 360, 0.5);
             }
         },
 
@@ -236,8 +236,8 @@
                 };
             },
 
-            shape: function () {
-                console.error('shape NYI');
+            meshPoint: function(basePoint, normal, progression, meshHelper) {
+                return meshHelper.calculateRotatedPoint(basePoint, normal, progression * 360, 0.5);
             }
         }
     };

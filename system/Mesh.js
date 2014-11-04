@@ -30,6 +30,10 @@
         this.normalDescriptor = {};
         this.colorDescriptor = {};
 
+        //  Whether or not the JS-copy of data will be retained after being uploaded to the GPU
+        this.retainData = false;
+        this._numData = 0;
+
         this._drawBuffers = {};
 
         this._needsBuild = true;
@@ -67,7 +71,20 @@
             }
         }
 
+        this._numData = this.vertices.length;
+
+        if (!this.retainData) {
+            this.vertices = [];
+            this.indices = [];
+            this.normals = [];
+            this.colors = [];
+        }
+
         this._needsBuild = false;
+    };
+
+    Mesh.prototype.numElements = function() {
+        return this._numData / this.vertexDescriptor.stride;
     };
 
     // Descriptor takes: 'data [float array]', 'stride [integer=3]', 'primitive [integer=gl.TRIANGLES]'

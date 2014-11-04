@@ -161,7 +161,7 @@
             throw "DON'T DO THIS (NYI)";
         }
         else {
-            gl.drawArrays(this._renderMesh.vertexDescriptor.primitive, 0, this._renderMesh.vertices.length / 3);
+            gl.drawArrays(this._renderMesh.vertexDescriptor.primitive, 0, this._renderMesh.numElements());
         }
 
         if (autoAttribArrays_) {

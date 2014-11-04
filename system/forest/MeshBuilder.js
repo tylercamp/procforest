@@ -54,6 +54,16 @@
         return vertices;
     }
 
+    function generateVerticesForSegmentEndpoint(endpoint, normal, seed) {
+        var result = [];
+        var i, meshHelper = new MeshHelper();
+        for (i = 0; i < seed.radialGenerationAccuracy; i++) {
+            result.push(seed.meshPoint(endpoint, normal, i / seed.radialGenerationAccuracy, meshHelper));
+        }
+
+        return result;
+    }
+
     function generateVerticesForSegment(segment, seed, fittingTerrain) {
         var structureIndex, structurePiece, normPrevious, normCurrent, normNext, endVertices = [];
         for (structureIndex = 0; structureIndex < segment.structure.length - 1; structureIndex++) {
@@ -77,7 +87,7 @@
             normNext = Math.normal(Math.vecLerp(0.5, normCurrent, normNext));
 
             endVertices.push({
-                a: generateVerticesForSegmentEndpoint(structurePiece.a, normPrevious, seed),
+                a: generateVerticesForSegmentEndpoint(structurePiece.a, normPrevious,  seed),
                 b: generateVerticesForSegmentEndpoint(structurePiece.b, normNext, seed)
             });
         }
@@ -116,23 +126,6 @@
         }
 
         return vertices;
-    }
-
-    function generateVerticesForSegmentEndpoint(endpoint, normal, seed) {
-        var result = [], i, rotationMatrix, perpVector, currentPoint, angle;
-        perpVector = Math.normal(Math.perpVector(normal));
-        perpVector = new Vector4([perpVector.x, perpVector.y, perpVector.z, 1]);
-        for (i = 0; i < seed.radialGenerationAccuracy; i++) {
-            angle = i / seed.radialGenerationAccuracy * 360;
-            rotationMatrix = new Matrix4().setRotate(angle, normal.x, normal.y, normal.z);
-            currentPoint = rotationMatrix.multiplyVector4(perpVector);
-            currentPoint = Math.normal({ x: currentPoint.elements[0], y: currentPoint.elements[1], z: currentPoint.elements[2] });
-            currentPoint = Math.vecSum(Math.vecMultiply(currentPoint, 0.5), endpoint);
-
-            result.push(currentPoint);
-        }
-
-        return result;
     }
 
 
