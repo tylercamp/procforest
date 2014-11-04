@@ -28,7 +28,7 @@
         numForestSimulationTicks: 10,
 
         Forest: {
-            maxSeedsDistance: 40
+            maxSeedsDistance: 20
         },
 
         SeedProbabilities: {

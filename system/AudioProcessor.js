@@ -32,11 +32,12 @@
         this._amplitudeHistory = [];
     };
 
-    AudioProcessor.prototype.setAudioData = function(rawAudioData, onComplete) {
+    AudioProcessor.prototype.setAudioData = function(rawAudioData, onComplete_) {
         var self = this;
         this._audioCtx.decodeAudioData(rawAudioData, function(buffer) {
             self._playbackBuffer.buffer = buffer;
-            onComplete();
+            if (onComplete_)
+                onComplete_();
         });
     };
 

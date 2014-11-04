@@ -564,7 +564,7 @@
             var terrain = resources.currentTerrain;
 
             //  Spawn particles randomly over the terrain
-            var numParticles = 5;
+            var numParticles = 15;
             var i, x, y, z, xnorm, znorm;
             for (i = 0; i < numParticles; i++) {
                 x = Math.random() * terrain.renderWidth();
