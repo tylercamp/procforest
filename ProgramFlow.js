@@ -8,7 +8,7 @@
 
     var mouseDeltaIgnoreThreshold = 500;
     var previousMousePos = { x: -10000, y: -10000 };
-    var cameraYOffset = 0.5;
+    var cameraYOffset = 1.5;
     var cameraYOffsetBounds = { min: -20, max: 500 };
 
     window.ProgramFlow = {
@@ -95,6 +95,7 @@
                     a_Color: gl.getAttribLocation(this.proceduralShader, "a_Color"),
 
                     u_NoiseParameter: gl.getUniformLocation(this.proceduralShader, "u_NoiseParameter"),
+                    u_BrightnessFactor: gl.getUniformLocation(this.proceduralShader, "u_BrightnessFactor"),
 
                     u_ModelViewMatrix: gl.getUniformLocation(this.proceduralShader, "u_ModelViewMatrix"),
                     u_ProjectionMatrix: gl.getUniformLocation(this.proceduralShader, "u_ProjectionMatrix")
@@ -356,8 +357,8 @@
             });
             console.log('generating grass');
             var i;
-            for (i = 0; i < 15; i++)
-                Controllers.forest.addGrass(gl, renderResources.currentTerrain, 5000, renderResources.grassBillboardImage);
+            for (i = 0; i < 10; i++)
+                Controllers.forest.addGrass(gl, renderResources.currentTerrain, 5500, renderResources.grassBillboardImage);
         },
 
         UpdateUI: function updateUI(resources) {
@@ -559,12 +560,13 @@
             }
 
             glHelper.disableAttribArrays(gl, shaderParams.attribArrays);
+        },
 
-
-
-
-            shader = resources.grassShader;
-            shaderParams = resources.grassShaderParams;
+        RenderGrass: function renderGrass(gl, resources) {
+            var i, forest;
+            var shader = resources.grassShader;
+            var shaderParams = resources.grassShaderParams;
+            forest = Controllers.forest;
 
             gl.useProgram(shader);
 
@@ -626,19 +628,20 @@
 
 
 
-        RenderAll: function renderAllElements(gl, resources) {
+        RenderAll: function renderAllElements(gl, resources, forestIntensity) {
             this.RenderSkybox(gl, resources);
             this.RenderTerrain(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
             this.RenderLakes(gl, resources);
-            this.RenderForest(gl, resources, 0.25);
+            this.RenderForest(gl, resources, forestIntensity);
+            this.RenderGrass(gl, resources);
             this.RenderParticles(gl, resources);
             this.RenderClouds(gl, resources);
         },
 
-        RenderEmissive: function renderEmissiveElements(gl, resources) {
+        RenderEmissive: function renderEmissiveElements(gl, resources, forestIntensity) {
             //this.RenderSkybox(gl, resources);
-            this.RenderForest(gl, resources, 1);
+            this.RenderForest(gl, resources, forestIntensity);
             this.RenderParticles(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
         }

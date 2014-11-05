@@ -295,10 +295,15 @@
                         initFunc: function() {
                             hideLoadingWindow();
                             Controllers.performance.beginMonitoring();
-                            //Controllers.audioProcessor.playCurrentAudio();
+                            Controllers.audioProcessor.playCurrentAudio();
 
                             Controllers.keyboard.onKey(' ', function() {
                                 Controllers.forest.timeline.tick(5);
+                            });
+
+                            Controllers.keyboard.onKey('H', function() {
+                                $('#debug-gui').toggle();
+                                $('#settings-gui').toggle();
                             });
 
                             runApp(gl, renderFunc, ProcForest.Settings, renderResources, 0);
@@ -361,6 +366,8 @@
 
                 ProgramFlow.UpdateParticles(gl, resources);
 
+                var forestIntensity = Math.pow(Controllers.audioProcessor.calculateAverageAmplitude(), 1) || 0;
+
 
                 //  Clear screen-buffer
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -373,7 +380,7 @@
                     gl.clearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
                     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-                    ProgramFlow.RenderAll(gl, resources);
+                    ProgramFlow.RenderAll(gl, resources, 0.25 + forestIntensity * 0.75);
 
                     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -388,7 +395,7 @@
                         gl.clearColor(0, 0, 0, 0);
                         gl.clear(gl.COLOR_BUFFER_BIT);
 
-                        ProgramFlow.RenderEmissive(gl, resources);
+                        ProgramFlow.RenderEmissive(gl, resources, forestIntensity);
                     }
 
                     { // Re-render the rasterized emissive components into a smaller framebuffer
@@ -409,8 +416,7 @@
                         gl.viewport(0, 0, screenWidth, screenHeight);
 
                         Effect.TexturePassthrough.bind(gl, bloomBuffer.renderTexture);
-                        var bloomIntensity = Math.pow(Controllers.audioProcessor.calculateAverageAmplitude(), 1.5);
-                        FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params, { a: bloomIntensity });
+                        FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params, { a: 1 });
 
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
                     }
