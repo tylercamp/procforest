@@ -67,6 +67,7 @@
     function Forest() {
         this.vegetationObjects = [];
         this.probabilityFields = null;
+        this.grassRenderers = [];
 
         this.defaultProbabilityFunction = {
             type: 'no-op'
@@ -155,6 +156,13 @@
 
         //  Simulate for numGrowthTicks
         this.timeline.tick(numGrowthTicks);
+    };
+
+    Forest.prototype.addGrass = function(gl, terrain, count, image) {
+        var newRenderer = new GrassRenderer();
+        newRenderer.generate(gl, terrain, count);
+        newRenderer.setGrassTexture(image);
+        this.grassRenderers.push(newRenderer);
     };
 
     window.Forest = Forest;

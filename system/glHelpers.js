@@ -73,7 +73,7 @@
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
             gl.bindTexture(gl.TEXTURE_2D, texture);
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, imageObject);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imageObject);
 
             gl.generateMipmap(gl.TEXTURE_2D);
 

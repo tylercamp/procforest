@@ -114,6 +114,7 @@
     <script src="system/forest/MeshBuilder.js"></script>
     <script src="system/forest/MeshHelper.js"></script>
     <script src="system/forest/ProbabilityField.js"></script>
+    <script src="system/forest/GrassRenderer.js"></script>
     <script src="system/Mesh.js"></script>
     <script src="system/ParticleSystem.js"></script>
     <script src="system/AudioProcessor.js"></script>
@@ -202,10 +203,14 @@
                 proceduralFragmentShader: 'resources/shaders/procedural-texture-fragment.glsl',
                 proceduralVertexShader: 'resources/shaders/procedural-texture-vertex.glsl',
 
+                grassVertexShader: 'resources/shaders/grass-vertex.glsl',
+                grassFragmentShader: 'resources/shaders/grass-fragment.glsl',
+
                 ppVertexShader: 'resources/shaders/postprocessing-vertex.glsl',
                 pp_Passthrough: 'resources/shaders/pp-passthrough.glsl',
 
                 grassImage: "resources/grassgreentexture0005.jpg",
+                grassBillboardImage: "resources/b-grass02.png",
 
                 blur_HorizontalVertexShader: "resources/shaders/blur-h-vertex.glsl",
                 blur_VerticalVertexShader: "resources/shaders/blur-v-vertex.glsl",
@@ -290,7 +295,7 @@
                         initFunc: function() {
                             hideLoadingWindow();
                             Controllers.performance.beginMonitoring();
-                            Controllers.audioProcessor.playCurrentAudio();
+                            //Controllers.audioProcessor.playCurrentAudio();
 
                             Controllers.keyboard.onKey(' ', function() {
                                 Controllers.forest.timeline.tick(5);

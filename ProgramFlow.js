@@ -20,7 +20,9 @@
                 this.coloredGeometryShader = glHelper.generateShader(gl, resources.coloredGeomVertexShader, resources.coloredGeomFragmentShader);
                 this.particleShader = glHelper.generateShader(gl, resources.particleVertexShader, resources.particleFragmentShader);
                 this.proceduralShader = glHelper.generateShader(gl, resources.proceduralVertexShader, resources.proceduralFragmentShader);
+                this.grassShader = glHelper.generateShader(gl, resources.grassVertexShader, resources.grassFragmentShader);
                 this.grassImage = glHelper.generateTextureObject(gl, resources.grassImage);
+                this.grassBillboardImage = glHelper.generateTextureObject(gl, resources.grassBillboardImage, gl.CLAMP_TO_EDGE);
                 this.modelViewMatrix = new Matrix4();
                 this.projectionMatrix = new Matrix4();
 
@@ -103,6 +105,18 @@
                 ];
 
 
+                gl.useProgram(this.grassShader);
+                this.grassShaderParams = {
+                    a_Vertex: gl.getAttribLocation(this.grassShader, "a_Vertex"),
+                    a_TexCoord0: gl.getAttribLocation(this.grassShader, "a_TexCoord0"),
+
+                    u_Diffuse: gl.getUniformLocation(this.grassShader, "u_Diffuse"),
+
+                    u_ModelViewMatrix: gl.getUniformLocation(this.grassShader, "u_ModelViewMatrix"),
+                    u_ProjectionMatrix: gl.getUniformLocation(this.grassShader, "u_ProjectionMatrix")
+                };
+
+
 
                 Effect.TexturePassthrough.init(gl, resources.ppVertexShader, resources.pp_Passthrough);
                 Effect.Blur.init(gl, resources.blur_HorizontalVertexShader, resources.blur_VerticalVertexShader, resources.blur_FragShader);
@@ -162,6 +176,7 @@
             gl.enable(gl.DEPTH_TEST);
             gl.depthFunc(gl.LEQUAL);
             gl.enable(gl.CULL_FACE);
+            gl.enable(gl.BLEND);
 
             //renderResources.skybox = new Skybox(resources.skyboxImage);
             renderResources.skybox = new Skybox([
@@ -339,6 +354,10 @@
             Controllers.forest.vegetationObjects.forEach(function(vegetation) {
                 vegetation._generateRenderMesh(gl, renderResources.currentTerrain);
             });
+            console.log('generating grass');
+            var i;
+            for (i = 0; i < 15; i++)
+                Controllers.forest.addGrass(gl, renderResources.currentTerrain, 5000, renderResources.grassBillboardImage);
         },
 
         UpdateUI: function updateUI(resources) {
@@ -540,6 +559,27 @@
             }
 
             glHelper.disableAttribArrays(gl, shaderParams.attribArrays);
+
+
+
+
+            shader = resources.grassShader;
+            shaderParams = resources.grassShaderParams;
+
+            gl.useProgram(shader);
+
+            gl.disable(gl.CULL_FACE);
+
+            gl.uniformMatrix4fv(shaderParams.u_ModelViewMatrix, false, resources.modelViewMatrix.elements);
+            gl.uniformMatrix4fv(shaderParams.u_ProjectionMatrix, false, resources.projectionMatrix.elements);
+
+            var grassRenderer;
+            for (i = 0; i < forest.grassRenderers.length; i++) {
+                grassRenderer = forest.grassRenderers[i];
+                grassRenderer.draw(gl, shaderParams);
+            }
+
+            gl.enable(gl.CULL_FACE);
         },
 
         RenderParticles: function renderParticles(gl, resources) {

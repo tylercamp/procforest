@@ -57,8 +57,16 @@
         if (this.colors.length)
             this._drawBuffers.colors = buildBuffer(gl, this._drawBuffers.colors, new Float32Array(this.colors));
 
-        //  Build textures (for images not yet converted)
         var i;
+        for (i = 0; i < this.texCoordSets.length; i++) {
+            if (!this.texCoordSets[i] || !(this.texCoordSets instanceof Array))
+                continue;
+
+            this._drawBuffers.texCoords = this._drawBuffers.texCoords || [];
+            this._drawBuffers.texCoords[i] = buildBuffer(gl, this._drawBuffers.texCoords[i], new Float32Array(this.texCoordSets[i]));
+        }
+
+        //  Build textures (for images not yet converted)
         for (i = 0; i < this.textures.length; i++) {
             if (this.textures[i] instanceof Image) {
                 this.textures[i] = glHelper.generateTextureObject(gl, this.textures[i]);
@@ -124,6 +132,7 @@
 
     // Descriptor takes: 'data [float array]', 'textureUnit [integer=0]' (Stride always assumed 2)
     Mesh.prototype.setTexUnitCoords = function(descriptor) {
+        descriptor.textureUnit = descriptor.textureUnit || 0;
         this.texCoordSets[descriptor.textureUnit] = descriptor.data;
 
         this._needsBuild = true;
