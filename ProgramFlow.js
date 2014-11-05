@@ -606,9 +606,10 @@
             var terrain = resources.currentTerrain;
 
             //  Spawn particles randomly over the terrain
-            var numParticles = 15;
+            var spawnsPerSecond = 700, spawnsThisFrame;
             var i, x, y, z, xnorm, znorm;
-            for (i = 0; i < numParticles; i++) {
+            spawnsThisFrame = Math.round(spawnsPerSecond * Controllers.time.getDelta());
+            for (i = 0; i < spawnsThisFrame; i++) {
                 x = Math.random() * terrain.renderWidth();
                 z = Math.random() * terrain.renderHeight();
                 y = terrain.getValue(x, z) + Math.random() * 15 + 0.25;
