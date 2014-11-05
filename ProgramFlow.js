@@ -8,7 +8,7 @@
 
     var mouseDeltaIgnoreThreshold = 500;
     var previousMousePos = { x: -10000, y: -10000 };
-    var cameraYOffset = 1.5;
+    var cameraYOffset = 0.35;
     var cameraYOffsetBounds = { min: -20, max: 500 };
 
     window.ProgramFlow = {
