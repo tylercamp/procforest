@@ -168,6 +168,7 @@
             Controllers.forest = new Forest();
             Controllers.particleSystem = new ParticleSystem(gl);
             Controllers.audioProcessor = new AudioProcessor();
+            Controllers.audioPlaylist = new AudioPlaylist(Controllers.audioProcessor);
 
             Controllers.time.onFpsChange(function (newFps) {
                 $('#fps').text(newFps);
@@ -193,7 +194,8 @@
             renderResources.skybox.generateBuffers(gl);
 
             Controllers.audioProcessor.init();
-            Controllers.audioProcessor.setAudioData(resources.song_1);
+            Controllers.audioPlaylist.addToQueue(resources.song_1);
+            Controllers.audioPlaylist.addToQueue(resources.song_2);
 
             return gl;
         },
@@ -272,6 +274,12 @@
 
             $cbxParticles.click(function(e) {
                 ProcForest.Settings.drawParticles = $cbxParticles.prop("checked");
+            });
+
+
+
+            $('#btn-change-song').click(function() {
+                Controllers.audioPlaylist.play();
             });
 
             //  I am so sorry for anyone trying to figure out how this little chunk works
@@ -534,7 +542,11 @@
             if (!ProcForest.Settings.drawForest)
                 return;
 
-            brightnessFactor_ = brightnessFactor_ || 1;
+            if (brightnessFactor_ <= 0 && isEmissive)
+                return;
+
+            if (brightnessFactor_ === undefined)
+                brightnessFactor_ = 1;
 
             var forest = Controllers.forest;
 

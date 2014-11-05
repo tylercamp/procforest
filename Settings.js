@@ -19,7 +19,7 @@
         drawParticles: true,
 
         textureGenSeed: 0.125,
-        textureVelocity: 0.7,
+        textureVelocity: 0.6,
 
         terrainSize: 100,
 

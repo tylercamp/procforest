@@ -19,14 +19,14 @@
     AudioProcessor.prototype.init = function () {
         this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         this._analyser = this._audioCtx.createAnalyser();
-        this._playbackBuffer = this._audioCtx.createBufferSource();
+        this._playbackBuffer = null;
+        this._currentDecodedBuffer = null;
+        this._isLoading = false;
+        this._isPlaying = false;
 
         //  Size of the FFT and size of the audio buffer
         this._analyser.fftSize = 1024;
         this._audioBuffer = new Float32Array(this._analyser.fftSize);
-
-        this._playbackBuffer.connect(this._audioCtx.destination);
-        this._playbackBuffer.connect(this._analyser);
 
         this.amplitudeSmoothing = 6;
         this._amplitudeHistory = [];
@@ -34,21 +34,47 @@
 
     AudioProcessor.prototype.setAudioData = function(rawAudioData, onComplete_) {
         var self = this;
+        this._isLoading = true;
         this._audioCtx.decodeAudioData(rawAudioData, function(buffer) {
-            self._playbackBuffer.buffer = buffer;
+            self._currentDecodedBuffer = buffer;
+            self._isLoading = false;
             if (onComplete_)
                 onComplete_();
         });
     };
 
     AudioProcessor.prototype.playCurrentAudio = function(onAudioEnded_) {
+        if (this._playbackBuffer !== null || this._isLoading || this._isPlaying)
+            return;
+
+        if (!this._currentDecodedBuffer) {
+            console.log('AudioProcessor.playCurrentAudio - setAudioData must be called first');
+        }
+
+        //  Reset amplitude history for new audio
+        this._amplitudeHistory = [];
+
+        this._playbackBuffer = this._audioCtx.createBufferSource();
+        this._playbackBuffer.buffer = this._currentDecodedBuffer;
+
+        this._playbackBuffer.connect(this._audioCtx.destination);
+        this._playbackBuffer.connect(this._analyser);
+
         this._playbackBuffer.start();
         this._playbackBuffer.onended = onAudioEnded_;
+        this._isPlaying = true;
     };
 
     AudioProcessor.prototype.stopCurrentAudio = function() {
+        if (this._playbackBuffer === null || !this._isPlaying)
+            return;
+
         this._playbackBuffer.stop();
-        this._playbackBuffer.onended = null;
+        this._playbackBuffer.disconnect(0);
+        this._analyser.disconnect(0);
+
+        this._playbackBuffer = null;
+        this._isPlaying = false;
     };
 
     AudioProcessor.prototype.processCurrentWaveform = function() {
@@ -69,6 +95,9 @@
 
     AudioProcessor.prototype.calculateAverageAmplitude = function() {
         var i, sum = 0;
+
+        if (this._audioBuffer === null || this._isLoading || !this._isPlaying)
+            return 0;
 
         //  Returned averaged amplitude
         for (i = 0; i < this._amplitudeHistory.length; i++) {

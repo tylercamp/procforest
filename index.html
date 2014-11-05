@@ -86,6 +86,10 @@
 
         <label for="texture-gen-slider">Texture Seed</label>
         <input id="texture-gen-slider" type="range" min="0" max="10" step="0.05">
+        <br>
+        <br>
+
+        <input id="btn-change-song" type="button" value="Change Song">
     </div>
 
     <div id="loading-pane"><div id="loading-text"></div></div>
@@ -118,6 +122,7 @@
     <script src="system/Mesh.js"></script>
     <script src="system/ParticleSystem.js"></script>
     <script src="system/AudioProcessor.js"></script>
+    <script src="system/AudioPlaylist.js"></script>
 
     <script src="effects/blur.effect.js"></script>
     <script src="effects/texture-passthrough.effect.js"></script>
@@ -181,7 +186,8 @@
             forest: null,
             performance: null,
             particleSystem: null,
-            audioProcessor: null
+            audioProcessor: null,
+            audioPlaylist: null
         };
 
         (function() {
@@ -255,8 +261,8 @@
 
 
 
-                song_1: 'resources/audio/Magic Man - Paris.mp3',
-                song_2: 'resources/audio/Lemaitre - Coffee Table.mp3'
+                song_2: 'resources/audio/Magic Man - Paris.mp3',
+                song_1: 'resources/audio/Lemaitre - Coffee Table.mp3'
 
             });
 
@@ -302,7 +308,7 @@
                         initFunc: function() {
                             hideLoadingWindow();
                             Controllers.performance.beginMonitoring();
-                            Controllers.audioProcessor.playCurrentAudio();
+                            Controllers.audioPlaylist.play();
 
                             Controllers.keyboard.onKey(' ', function() {
                                 Controllers.forest.timeline.tick(5);
