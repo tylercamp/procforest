@@ -86,6 +86,7 @@
             this.indices = [];
             this.normals = [];
             this.colors = [];
+            this.texCoordSets = [];
         }
 
         this._needsBuild = false;
