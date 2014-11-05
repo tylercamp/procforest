@@ -95,6 +95,7 @@
                     a_Color: gl.getAttribLocation(this.proceduralShader, "a_Color"),
 
                     u_NoiseParameter: gl.getUniformLocation(this.proceduralShader, "u_NoiseParameter"),
+                    u_IsEmissive: gl.getUniformLocation(this.proceduralShader, "u_IsEmissive"),
                     u_BrightnessFactor: gl.getUniformLocation(this.proceduralShader, "u_BrightnessFactor"),
 
                     u_ModelViewMatrix: gl.getUniformLocation(this.proceduralShader, "u_ModelViewMatrix"),
@@ -356,9 +357,11 @@
                 vegetation._generateRenderMesh(gl, renderResources.currentTerrain);
             });
             console.log('generating grass');
-            var i;
-            for (i = 0; i < 10; i++)
-                Controllers.forest.addGrass(gl, renderResources.currentTerrain, 5500, renderResources.grassBillboardImage);
+            var i, remainingMeshes = ProcForest.Settings.numGrassMeshes, maxMeshesPerIteration = 5500;
+            while (remainingMeshes > 0) {
+                Controllers.forest.addGrass(gl, renderResources.currentTerrain, remainingMeshes % maxMeshesPerIteration, renderResources.grassBillboardImage);
+                remainingMeshes -= maxMeshesPerIteration;
+            }
         },
 
         UpdateUI: function updateUI(resources) {
@@ -527,7 +530,7 @@
 
         },
 
-        RenderForest: function renderForest(gl, resources, brightnessFactor_) {
+        RenderForest: function renderForest(gl, resources, isEmissive, brightnessFactor_) {
             if (!ProcForest.Settings.drawForest)
                 return;
 
@@ -548,6 +551,7 @@
 
             gl.uniform1f(shaderParams.u_NoiseParameter, ProcForest.Settings.textureGenSeed);
             gl.uniform1f(shaderParams.u_BrightnessFactor, brightnessFactor_);
+            gl.uniform1i(shaderParams.u_IsEmissive, isEmissive || false);
             ProcForest.Settings.textureGenSeed += Controllers.time.getDelta() * ProcForest.Settings.textureVelocity;
 
             glHelper.enableAttribArrays(gl, shaderParams.attribArrays);
@@ -634,15 +638,15 @@
             this.RenderTerrain(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
             this.RenderLakes(gl, resources);
-            this.RenderForest(gl, resources, forestIntensity);
+            this.RenderForest(gl, resources, false, forestIntensity);
             this.RenderGrass(gl, resources);
             this.RenderParticles(gl, resources);
             this.RenderClouds(gl, resources);
         },
 
         RenderEmissive: function renderEmissiveElements(gl, resources, forestIntensity) {
-            //this.RenderSkybox(gl, resources);
-            this.RenderForest(gl, resources, forestIntensity);
+            this.RenderForest(gl, resources, true, forestIntensity);
+            this.RenderSkybox(gl, resources);
             this.RenderParticles(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
         }

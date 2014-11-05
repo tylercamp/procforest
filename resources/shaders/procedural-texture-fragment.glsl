@@ -5,6 +5,7 @@ varying vec3 v_Position;
 varying vec4 v_Color;
 
 uniform float u_NoiseParameter;
+uniform bool u_IsEmissive;
 
 float snoise(vec4 v);
 
@@ -18,12 +19,19 @@ void main(void) {
     samplePos.w = u_NoiseParameter;
     float noiseValue = snoise(samplePos*0.25);
     //noiseValue = band(noiseValue * 0.5 + 1.0, 5.0);
-    noiseValue = noiseValue * 0.5 + 1.0;
 
-    gl_FragColor.rgb = (noiseValue / 1.0 + 0.0) * v_Color.rgb;
+    if (u_IsEmissive)
+        noiseValue = max(noiseValue, 0.0) * 2.0 + 0.1;
+    else
+        noiseValue = (noiseValue * 0.5 + 0.5) * 0.3 + 0.1;
+
+    gl_FragColor = (noiseValue / 1.0 + 0.0) * v_Color;
+
     //gl_FragColor.rgb = vec3(0.52, 0.419, 0.165) * (noiseValue / 2.0 + 0.5) * v_Color.rgb;
     //gl_FragColor.rgb *= 0.5;
-    gl_FragColor.a = 1.0;
+
+    if (!u_IsEmissive)
+        gl_FragColor.a = 1.0;
 }
 
 

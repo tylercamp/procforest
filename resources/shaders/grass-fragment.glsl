@@ -10,6 +10,6 @@ void main(void) {
     if (gl_FragColor.a < 0.1)
         discard;
 
-    gl_FragColor.rgb *= vec3(0.2, 0.21, 0.2) * 0.6;
+    gl_FragColor.rgb *= vec3(0.2, 0.21, 0.2) * 0.7;
     gl_FragColor.a = pow(gl_FragColor.a, 3.0);
 }

@@ -19,13 +19,15 @@
         drawParticles: true,
 
         textureGenSeed: 0.125,
-        textureVelocity: 0.1,
+        textureVelocity: 0.7,
 
         terrainSize: 100,
 
         frameSkip: 1,
         backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 },
         numForestSimulationTicks: 10,
+
+        numGrassMeshes: 200000,
 
         Forest: {
             maxSeedsDistance: 20
