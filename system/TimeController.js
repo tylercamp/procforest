@@ -29,6 +29,7 @@
 
         var currentTime = new Date();
         this._delta = (currentTime.valueOf() - this._lastRenderTime.valueOf()) / 1000.0;
+        this._delta = Math.min(this._delta, 1.0);
         this._lastRenderTime = currentTime;
 
 

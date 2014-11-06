@@ -19,7 +19,7 @@
         drawParticles: true,
 
         textureGenSeed: 0.125,
-        textureVelocity: 0.6,
+        textureVelocity: 0.4,
 
         terrainSize: 100,
 
@@ -30,14 +30,14 @@
         numGrassMeshes: 200000,
 
         Forest: {
-            maxSeedsDistance: 20
+            maxSeedsDistance: 10
         },
 
         SeedProbabilities: {
-            wispTree: 0.5,
+            wispTree: 0.3,
             tree: 0.5,
-            root: 0.5,
-            lilyBush: 0.5,
+            root: 0.2,
+            lilyBush: 0.1,
             cradleTree: 0.5
         }
     };

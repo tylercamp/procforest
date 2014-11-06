@@ -68,6 +68,7 @@
         this.vegetationObjects = [];
         this.probabilityFields = null;
         this.grassRenderers = [];
+        this.registerNewOffspring = true;
 
         this.defaultProbabilityFunction = {
             type: 'no-op'
@@ -97,10 +98,12 @@
         console.log('seed-h', terrainHeight / spread.y);
 
         //  Spread initial seeds (don't put seeds on the edges of the terrain)
-        var vegetation, vegetationObjects = this.vegetationObjects;
+        var vegetation, vegetationObjects = this.vegetationObjects, xrand, zrand;
         for (y = spread.y; y <= terrainWidth - spread.y; y += spread.y) {
             for (x = spread.x; x <= terrainHeight - spread.x; x += spread.x) {
-                vegetation = Forest.Seed.plant(x, terrain.getValue(x, y), y, terrain.getNormal(x, y), Seeds.pick());
+                xrand = Math.random() * spread.x * 0.25 - spread.x * 0.125;
+                zrand = Math.random() * spread.y * 0.25 - spread.y * 0.125;
+                vegetation = Forest.Seed.plant(x+xrand, terrain.getValue(x+xrand, y+zrand), y+zrand, terrain.getNormal(x+xrand, y+zrand), Seeds.pick());
                 vegetationObjects.push(vegetation);
             }
         }
