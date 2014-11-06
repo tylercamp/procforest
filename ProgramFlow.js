@@ -196,6 +196,7 @@
             Controllers.audioProcessor.init();
             Controllers.audioPlaylist.addToQueue(resources.song_1);
             Controllers.audioPlaylist.addToQueue(resources.song_2);
+            Controllers.audioPlaylist.addToQueue(resources.song_3);
 
             return gl;
         },
@@ -538,6 +539,13 @@
 
         },
 
+        UpdateForest: function updateForest() {
+            Controllers.forest.update();
+            Controllers.forest.excite(Controllers.audioProcessor.calculateWaveData());
+
+            ProcForest.Settings.textureGenSeed += Controllers.time.getDelta() * ProcForest.Settings.textureVelocity;
+        },
+
         RenderForest: function renderForest(gl, resources, isEmissive, brightnessFactor_) {
             if (!ProcForest.Settings.drawForest)
                 return;
@@ -562,9 +570,7 @@
             gl.uniformMatrix4fv(shaderParams.u_ProjectionMatrix, false, resources.projectionMatrix.elements);
 
             gl.uniform1f(shaderParams.u_NoiseParameter, ProcForest.Settings.textureGenSeed);
-            gl.uniform1f(shaderParams.u_BrightnessFactor, brightnessFactor_);
             gl.uniform1i(shaderParams.u_IsEmissive, isEmissive || false);
-            ProcForest.Settings.textureGenSeed += Controllers.time.getDelta() * ProcForest.Settings.textureVelocity;
 
             glHelper.enableAttribArrays(gl, shaderParams.attribArrays);
 
@@ -572,6 +578,10 @@
             for (i = 0; i < forest.vegetationObjects.length; i++) {
                 vegetationObject = forest.vegetationObjects[i];
                 //vegetationObject.drawStructure(gl, shaderParams, false);
+                if (isEmissive)
+                    gl.uniform1f(shaderParams.u_BrightnessFactor, vegetationObject.getExcitation());
+                else
+                    gl.uniform1f(shaderParams.u_BrightnessFactor, brightnessFactor_ + (1 - brightnessFactor_) * vegetationObject.getExcitation());
                 vegetationObject.draw(gl, shaderParams, resources.currentTerrain, false);
             }
 
@@ -645,19 +655,19 @@
 
 
 
-        RenderAll: function renderAllElements(gl, resources, forestIntensity) {
+        RenderAll: function renderAllElements(gl, resources) {
             this.RenderSkybox(gl, resources);
             this.RenderTerrain(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
             this.RenderLakes(gl, resources);
-            this.RenderForest(gl, resources, false, forestIntensity);
+            this.RenderForest(gl, resources, false, 0.25);
             this.RenderGrass(gl, resources);
             this.RenderParticles(gl, resources);
             this.RenderClouds(gl, resources);
         },
 
-        RenderEmissive: function renderEmissiveElements(gl, resources, forestIntensity) {
-            this.RenderForest(gl, resources, true, forestIntensity);
+        RenderEmissive: function renderEmissiveElements(gl, resources) {
+            this.RenderForest(gl, resources, true, 1);
             this.RenderSkybox(gl, resources);
             this.RenderParticles(gl, resources);
             //this.RenderSpecialSquare(gl, resources);

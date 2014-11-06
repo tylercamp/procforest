@@ -108,6 +108,10 @@
             c: Math.random()
         };
 
+        this.age = 0;
+
+        this._excitation = 0;
+
         this._renderMesh = null;
         this._structureMesh = null;
         this._needsBuild = true;
@@ -131,6 +135,10 @@
         }
 
         return result;
+    };
+
+    Vegetation.prototype.getExcitation = function() {
+        return this._excitation;
     };
 
     Vegetation.prototype.draw = function(gl, shaderParams, fittingTerrain, autoAttribArrays_) {
@@ -243,6 +251,16 @@
         this._needsBuild = false;
     };
 
+    Vegetation.prototype.update = function update(timeDelta) {
+        this._excitation -= timeDelta * this._excitation / this.seed.excitationFalloff;
+    };
+
+    Vegetation.prototype.excite = function excite(wave) {
+        var excitation = this.seed.calculateExcitation(this, wave, this.fingerprint);
+        if (excitation > this._excitation)
+            this._excitation = excitation;
+    };
+
     Vegetation.prototype.grow = function grow(terrain) {
         var structureSegments = this.structureSegments;
 
@@ -317,6 +335,8 @@
         for (i = 0; i < newSegments.length; i++) {
             structureSegments.push(newSegments[i]);
         }
+
+        this.age++;
 
         if (offspring.length)
             return offspring;

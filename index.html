@@ -258,11 +258,18 @@
                 skybox_Back: 'resources/skybox/FullMoonBack2048.jpg',
                 skybox_Bottom: 'resources/skybox/FullMoonDown2048.jpg',
 
+//                skybox_Front: 'resources/skybox/interstellar_ft.jpg',
+//                skybox_Left: 'resources/skybox/interstellar_lf.jpg',
+//                skybox_Right: 'resources/skybox/interstellar_rt.jpg',
+//                skybox_Top: 'resources/skybox/interstellar_up.jpg',
+//                skybox_Back: 'resources/skybox/interstellar_bk.jpg',
+//                skybox_Bottom: 'resources/skybox/interstellar_dn.jpg',
 
 
 
-                song_2: 'resources/audio/Magic Man - Paris.mp3',
-                song_1: 'resources/audio/Lemaitre - Coffee Table.mp3'
+                song_1: 'resources/audio/Magic Man - Paris.mp3',
+                song_2: 'resources/audio/Lemaitre - Coffee Table.mp3',
+                song_3: 'resources/audio/Geometer - Slidecamp.mp3'
 
             });
 
@@ -308,7 +315,7 @@
                         initFunc: function() {
                             hideLoadingWindow();
                             Controllers.performance.beginMonitoring();
-                            Controllers.audioPlaylist.play();
+                            //Controllers.audioPlaylist.play();
 
                             Controllers.keyboard.onKey(' ', function() {
                                 Controllers.forest.timeline.tick(5);
@@ -378,8 +385,7 @@
                 $('#audio-factor').text(Controllers.audioProcessor.calculateAverageAmplitude().toPrecision(2));
 
                 ProgramFlow.UpdateParticles(gl, resources);
-
-                var forestIntensity = Math.pow(Controllers.audioProcessor.calculateAverageAmplitude(), 1) || 0;
+                ProgramFlow.UpdateForest();
 
 
                 //  Clear screen-buffer
@@ -393,7 +399,7 @@
                     gl.clearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
                     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-                    ProgramFlow.RenderAll(gl, resources, 0.25 + forestIntensity * 0.75);
+                    ProgramFlow.RenderAll(gl, resources);
 
                     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -408,7 +414,7 @@
                         gl.clearColor(0, 0, 0, 0);
                         gl.clear(gl.COLOR_BUFFER_BIT);
 
-                        ProgramFlow.RenderEmissive(gl, resources, forestIntensity);
+                        ProgramFlow.RenderEmissive(gl, resources);
                     }
 
                     { // Re-render the rasterized emissive components into a smaller framebuffer

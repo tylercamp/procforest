@@ -11,6 +11,7 @@
             name: 'wisp tree',
             radialGenerationAccuracy: 15,
             terrainAlignmentFactor: 0.3,
+            excitationFalloff: 2,
 
             probabilityFieldFunction: {
                 type: 'linear',
@@ -25,6 +26,10 @@
 
             finalize: function(segment) {
 
+            },
+
+            calculateExcitation: function(vegetation, wave, fingerprint) {
+                return wave.smoothedAmplitude;
             },
 
             //  Returns vector indicating position for next point (relative to last point)
@@ -64,6 +69,7 @@
             name: 'tree',
             radialGenerationAccuracy: 15,
             terrainAlignmentFactor: 0.5,
+            excitationFalloff: 2,
 
             probabilityFieldFunction: {
                 type: 'linear',
@@ -78,6 +84,10 @@
 
             finalize: function(segment) {
 
+            },
+
+            calculateExcitation: function(vegetation, wave, fingerprint) {
+                return wave.smoothedAmplitude;
             },
 
             //  Returns vector indicating position for next point (relative to last point)
@@ -142,6 +152,7 @@
             name: 'overgrowth root',
             radialGenerationAccuracy: 15,
             terrainAligmentFactor: 1,
+            excitationFalloff: 2,
 
             probabilityFieldFunction: {
                 type: 'linear',
@@ -165,6 +176,10 @@
                 while ((currentSmallestAngle = segment.smallestSectionAngle()) < smallestAngle && i++ < 15) { // max of 15 iterations
                     segment.smooth(0.05);
                 }
+            },
+
+            calculateExcitation: function(vegetation, wave, fingerprint) {
+                return wave.smoothedAmplitude;
             },
 
             growth: function(terrain, segment, fingerprint, currentDirection) {
@@ -245,6 +260,7 @@
             name: 'Lily Bush',
             radialGenerationAccuracy: 15,
             terrainAlignmentFactor: 1,
+            excitationFalloff: 2,
 
             probabilityFieldFunction: {
                 type: 'linear',
@@ -259,6 +275,10 @@
 
             finalize: function(segment) {
 
+            },
+
+            calculateExcitation: function(vegetation, wave, fingerprint) {
+                return wave.smoothedAmplitude;
             },
 
             growth: function(terrain, segment, fingerprint, currentDirection) {
@@ -294,6 +314,7 @@
             name: 'Cradle Tree',
             radialGenerationAccuracy: 15,
             terrainAlignmentFactor: 1,
+            excitationFalloff: 2,
 
             probabilityFieldFunction: {
                 type: 'linear',
@@ -309,6 +330,10 @@
 
             finalize: function(segment) {
 
+            },
+
+            calculateExcitation: function(vegetation, wave, fingerprint) {
+                return wave.smoothedAmplitude;
             },
 
             growth: function(terrain, segment, fingerprint, currentDirection) {

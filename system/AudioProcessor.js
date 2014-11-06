@@ -107,6 +107,26 @@
         return (sum / this._amplitudeHistory.length) || 0;
     };
 
+    AudioProcessor.prototype.calculateWaveData = function() {
+        var result = {
+            fft: new Float32Array(this._analyser.fftSize),
+            wave: new Float32Array(this._analyser.fftSize),
+            amplitude: null,
+            smoothedAmplitude: null
+        };
+
+        this._analyser.getFloatFrequencyData(result.fft);
+        this._analyser.getFloatTimeDomainData(result.wave);
+
+        result.smoothedAmplitude = this.calculateAverageAmplitude();
+        if (this._amplitudeHistory.length)
+            result.amplitude = this._amplitudeHistory[this._amplitudeHistory.length - 1];
+        else
+            result.amplitude = 0;
+
+        return result;
+    };
+
     window.AudioProcessor = AudioProcessor;
 
 })();

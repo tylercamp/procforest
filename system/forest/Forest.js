@@ -75,6 +75,21 @@
         };
     }
 
+    Forest.prototype.update = function() {
+        var i, timeDelta;
+        timeDelta = Controllers.time.getDelta();
+        for (i = 0; i < this.vegetationObjects.length; i++) {
+            this.vegetationObjects[i].update(timeDelta);
+        }
+    };
+
+    Forest.prototype.excite = function(waveData) {
+        var i;
+        for (i = 0; i < this.vegetationObjects.length; i++) {
+            this.vegetationObjects[i].excite(waveData);
+        }
+    };
+
     Forest.prototype.generate = function(numGrowthTicks, terrain) {
         this.timeline = new Timeline();
         this.vegetationObjects = [];
