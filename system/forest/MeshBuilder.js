@@ -54,11 +54,11 @@
         return vertices;
     }
 
-    function generateVerticesForSegmentEndpoint(endpoint, normal, seed) {
+    function generateVerticesForSegmentEndpoint(segment, endpoint, normal, seed) {
         var result = [];
         var i, meshHelper = new MeshHelper();
         for (i = 0; i < seed.radialGenerationAccuracy; i++) {
-            result.push(seed.meshPoint(endpoint, normal, i / seed.radialGenerationAccuracy, meshHelper));
+            result.push(seed.meshPoint(segment, endpoint, normal, i / seed.radialGenerationAccuracy, meshHelper));
         }
 
         return result;
@@ -87,8 +87,8 @@
             normNext = Math.normal(Math.vecLerp(0.5, normCurrent, normNext));
 
             endVertices.push({
-                a: generateVerticesForSegmentEndpoint(structurePiece.a, normPrevious,  seed),
-                b: generateVerticesForSegmentEndpoint(structurePiece.b, normNext, seed)
+                a: generateVerticesForSegmentEndpoint(segment, structurePiece.a, normPrevious,  seed),
+                b: generateVerticesForSegmentEndpoint(segment, structurePiece.b, normNext, seed)
             });
         }
 

@@ -36,7 +36,9 @@
         SeedProbabilities: {
             wispTree: 0.5,
             tree: 0.5,
-            root: 0.5
+            root: 0.5,
+            lilyBush: 0.5,
+            cradleTree: 0.5
         }
     };
 

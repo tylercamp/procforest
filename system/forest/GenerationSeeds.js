@@ -55,7 +55,7 @@
 //                };
             },
 
-            meshPoint: function(basePoint, normal, progression, meshHelper) {
+            meshPoint: function(segment, basePoint, normal, progression, meshHelper) {
                 return meshHelper.calculateRotatedPoint(basePoint, normal, progression * 360, 0.3);
             }
         },
@@ -123,7 +123,7 @@
 //                };
             },
 
-            meshPoint: function(basePoint, normal, progression, meshHelper) {
+            meshPoint: function(segment, basePoint, normal, progression, meshHelper) {
                 return meshHelper.calculateRotatedPoint(basePoint, normal, progression * 360, 0.5);
             }
         },
@@ -236,7 +236,86 @@
                 };
             },
 
-            meshPoint: function(basePoint, normal, progression, meshHelper) {
+            meshPoint: function(segment, basePoint, normal, progression, meshHelper) {
+                return meshHelper.calculateRotatedPoint(basePoint, normal, progression * 360, 0.5);
+            }
+        },
+
+        lilyBush: {
+            name: 'Lily Bush',
+            radialGenerationAccuracy: 15,
+            terrainAlignmentFactor: 1,
+
+            probabilityFieldFunction: {
+                type: 'linear',
+                holeRadius: 0.5,
+                maxDistance: 1,
+                scale: 1
+            },
+
+            probability: function() {
+                return ProcForest.Settings.SeedProbabilities.lilyBush;
+            },
+
+            finalize: function(segment) {
+
+            },
+
+            growth: function(terrain, segment, fingerprint, currentDirection) {
+                var relativeChange, subSegments, changeMagnitude;
+                changeMagnitude = 1 / (segment.calculateArcLength() + 1) * fingerprint.b * (segment.subdivisionIndex+1);
+                relativeChange = Math.vecOfLength(currentDirection, changeMagnitude);
+                if (segment.calculateArcLength() / (segment.subdivisionIndex + 1) > 3 * fingerprint.a + 0.5) {
+                    relativeChange = null;
+                }
+
+                subSegments = [];
+                if (segment.numChildren === 0 && segment.subdivisionIndex < Math.ceil(fingerprint.a * 4) + 2) {
+                    subSegments.push({
+                        offset: 0,
+                        baseOrientation: currentDirection
+                    });
+                }
+
+                return {
+                    relativeChange: relativeChange,
+                    newSegments: subSegments
+                };
+            },
+
+            meshPoint: function(segment, basePoint, normal, progression, meshHelper) {
+                var pointDistance = Math.magnitude(Math.vecDifference(basePoint, segment.structure[0]));
+                var radialOffset = Math.pow(pointDistance, 1.2) / (segment.subdivisionIndex * 0.3 + 1) + 0.25;
+                return meshHelper.calculateRotatedPoint(basePoint, normal, progression * 360, radialOffset);
+            }
+        },
+
+        cradleTree: {
+            name: 'Cradle Tree',
+            radialGenerationAccuracy: 15,
+            terrainAlignmentFactor: 1,
+
+            probabilityFieldFunction: {
+                type: 'linear',
+                holeRadius: 0.5,
+                maxDistance: 1,
+                scale: 1
+            },
+
+            probability: function() {
+                //return ProcForest.Settings.SeedProbabilities.cradleTree;
+                return 0;
+            },
+
+            finalize: function(segment) {
+
+            },
+
+            growth: function(terrain, segment, fingerprint, currentDirection) {
+                return null;
+            },
+
+            meshPoint: function(segment, basePoint, normal, progression, meshHelper) {
                 return meshHelper.calculateRotatedPoint(basePoint, normal, progression * 360, 0.5);
             }
         }
