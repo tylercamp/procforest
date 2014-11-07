@@ -47,6 +47,8 @@
         <canvas id="probability-field" width="300" height="300"></canvas>
     </div>
 
+    <div id="audio-track-gui" style="display: none"></div>
+
     <!-- Settings GUI -->
     <div id="settings-gui" class="gui">
         <h3>Settings</h3>
@@ -267,10 +269,20 @@
 
 
 
-                song_1: 'resources/audio/Magic Man - Paris.mp3',
-                song_2: 'resources/audio/Lemaitre - Coffee Table.mp3',
-                song_3: 'resources/audio/Geometer - Slidecamp.mp3'
-
+                song_1: 'resources/audio/R Plus Seven - Boring Angel.mp3',
+                song_2: 'resources/audio/R Plus Seven - Chrome Country.mp3',
+                song_3: 'resources/audio/Geometer - Slidecamp.mp3',
+                song_4: 'resources/audio/R Plus Seven - Cryo.mp3',
+                song_5: 'resources/audio/R Plus Seven - He She.mp3',
+                song_6: 'resources/audio/R Plus Seven - Inside World.mp3',
+                song_7: 'resources/audio/R Plus Seven - Still Life.mp3',
+                song_8: 'resources/audio/Tycho - Awake.mp3',
+                song_9: 'resources/audio/Tycho - Dye.mp3',
+                song_10: 'resources/audio/Tycho - L.mp3',
+                song_11: 'resources/audio/Tycho - Montana.mp3',
+                song_12: 'resources/audio/Tycho - Plains.mp3',
+                song_13: 'resources/audio/Tycho - See.mp3',
+                song_14: 'resources/audio/Tycho - Spectre.mp3'
             });
 
 
@@ -315,6 +327,17 @@
                         initFunc: function() {
                             hideLoadingWindow();
                             Controllers.performance.beginMonitoring();
+
+                            Controllers.audioPlaylist.onAudioStart(function(waveData, label) {
+                                var $audiogui = $('#audio-track-gui');
+                                $audiogui.text(label);
+                                $audiogui.slideDown(function() {
+                                    setTimeout(function() {
+                                        $audiogui.slideUp();
+                                    }, 5000);
+                                });
+                            });
+
                             Controllers.audioPlaylist.play();
 
 //                            Controllers.keyboard.onKey(' ', function() {

@@ -13,10 +13,12 @@
         this._audioData = [];
         this._audioProcessor = targetAudioProcessor;
         this._lastAudioIndex = -1;
+
+        this._audioStartListeners = [];
     }
 
-    AudioPlaylist.prototype.addToQueue = function(rawEncodedAudio) {
-        this._audioData.push(rawEncodedAudio);
+    AudioPlaylist.prototype.addToQueue = function(rawEncodedAudio, name) {
+        this._audioData.push({data: rawEncodedAudio, label: name});
     };
 
     AudioPlaylist.prototype.play = function() {
@@ -34,15 +36,23 @@
         }
 
         this._audioProcessor.stopCurrentAudio();
-        this._audioProcessor.setAudioData(this._audioData[newIndex], function() {
+        this._audioProcessor.setAudioData(this._audioData[newIndex].data, function() {
             setTimeout(function() {
                 self._audioProcessor.playCurrentAudio(function () {
                     self.play();
+                });
+
+                self._audioStartListeners.forEach(function(listener) {
+                    listener(self._audioData[newIndex].data, self._audioData[newIndex].label);
                 });
             }, Math.ceil(self.songChangeDelay * 1000));
         });
 
         this._lastAudioIndex = newIndex;
+    };
+
+    AudioPlaylist.prototype.onAudioStart = function(listener) {
+        this._audioStartListeners.push(listener);
     };
 
     AudioPlaylist.prototype.pause = function() {

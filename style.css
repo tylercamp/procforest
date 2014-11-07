@@ -72,6 +72,18 @@ body {
     overflow: hidden;
 }
 
+#audio-track-gui {
+    position: absolute;
+    width: 600px;
+    margin: 50px auto;
+    left: 0; right: 0;
+    text-align: center;
+    z-index: 2;
+    font-size: 3em;
+    color: white;
+    font-family: 'helvetica';
+}
+
 table {
     margin-top: 2em;
 }

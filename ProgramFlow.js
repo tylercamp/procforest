@@ -194,9 +194,20 @@
             renderResources.skybox.generateBuffers(gl);
 
             Controllers.audioProcessor.init();
-            Controllers.audioPlaylist.addToQueue(resources.song_1);
-            Controllers.audioPlaylist.addToQueue(resources.song_2);
-            Controllers.audioPlaylist.addToQueue(resources.song_3);
+            Controllers.audioPlaylist.addToQueue(resources.song_1, "Boring Angel, by R Plus Seven");
+            Controllers.audioPlaylist.addToQueue(resources.song_2, "Chrome Country, by R Plus Seven");
+            Controllers.audioPlaylist.addToQueue(resources.song_3, "Slidecamp, by Geometer");
+            Controllers.audioPlaylist.addToQueue(resources.song_4, "Cryo, by R Plus Seven");
+            Controllers.audioPlaylist.addToQueue(resources.song_5, "He She, by R Plus Seven");
+            Controllers.audioPlaylist.addToQueue(resources.song_6, "Inside World, by R Plus Seven");
+            Controllers.audioPlaylist.addToQueue(resources.song_7, "Still Life, by R Plus Seven");
+            Controllers.audioPlaylist.addToQueue(resources.song_8, "Awake, by Tycho");
+            Controllers.audioPlaylist.addToQueue(resources.song_9, "Dye, by Tycho");
+            Controllers.audioPlaylist.addToQueue(resources.song_10, "L, by Tycho");
+            Controllers.audioPlaylist.addToQueue(resources.song_11, "Montana, by Tycho");
+            Controllers.audioPlaylist.addToQueue(resources.song_12, "Plains, by Tycho");
+            Controllers.audioPlaylist.addToQueue(resources.song_13, "See, by Tycho");
+            Controllers.audioPlaylist.addToQueue(resources.song_14, "Spectre, by Tycho");
 
             return gl;
         },
