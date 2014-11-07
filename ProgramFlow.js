@@ -420,7 +420,9 @@
             }
 
             var timeDelta = Controllers.time.getDelta();
-            var moveSpeed = (Math.max(cameraYOffset, -1) + 2) * timeDelta;
+            var moveSpeed = (Math.max(cameraYOffset, -1) + 2) * timeDelta * 4;
+            camera.maxSpeed = moveSpeed / timeDelta / 4;
+            camera.friction = moveSpeed * 10;
             if (keyboard.checkKey('W'))
                 camera.moveForward(moveSpeed);
             if (keyboard.checkKey('A'))
@@ -431,11 +433,13 @@
                 camera.moveRight(moveSpeed);
 
             if (keyboard.checkKey('X'))
-                cameraYOffset += moveSpeed;
+                cameraYOffset += moveSpeed / 4;
             if (keyboard.checkKey('Z'))
-                cameraYOffset -= moveSpeed;
+                cameraYOffset -= moveSpeed / 4;
 
             cameraYOffset = Math.clamp(cameraYOffset, cameraYOffsetBounds.min, cameraYOffsetBounds.max);
+
+            camera.update(timeDelta);
 
             camera.y = resources.currentTerrain.getValue(camera.x, camera.z) + cameraYOffset;
 
