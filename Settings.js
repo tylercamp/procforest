@@ -21,23 +21,23 @@
         textureGenSeed: 0.125,
         textureVelocity: 0.4,
 
-        terrainSize: 100,
+        terrainSize: 400,
 
         frameSkip: 1,
         backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 },
         numForestSimulationTicks: 10,
 
-        numGrassMeshes: 200000,
+        numGrassMeshes: 500000,
 
         Forest: {
-            maxSeedsDistance: 10
+            maxSeedsDistance: 30
         },
 
         SeedProbabilities: {
             wispTree: 0.3,
             tree: 0.5,
             root: 0.2,
-            lilyBush: 0.1,
+            lilyBush: 0,
             cradleTree: 0.5
         }
     };

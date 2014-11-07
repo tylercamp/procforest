@@ -29,7 +29,12 @@
             },
 
             calculateExcitation: function(vegetation, wave, fingerprint) {
-                return wave.smoothedAmplitude;
+                var fftInfo = evaluateFft(
+                    wave.fft,
+                    0.02 + (fingerprint.a - fingerprint.b) * 0.005,
+                    0.1 + (fingerprint.c - fingerprint.b) * 0.25
+                );
+                return wave.smoothedAmplitude * fftInfo.max * 2;
             },
 
             //  Returns vector indicating position for next point (relative to last point)
@@ -87,7 +92,12 @@
             },
 
             calculateExcitation: function(vegetation, wave, fingerprint) {
-                return wave.smoothedAmplitude;
+                var fftInfo = evaluateFft(
+                    wave.fft,
+                    0.1 + (fingerprint.a - fingerprint.b) * 0.05,
+                    0.3 + (fingerprint.c - fingerprint.b) * 0.1
+                );
+                return wave.smoothedAmplitude * fftInfo.max * 2;
             },
 
             //  Returns vector indicating position for next point (relative to last point)
@@ -152,7 +162,7 @@
             name: 'overgrowth root',
             radialGenerationAccuracy: 15,
             terrainAligmentFactor: 1,
-            excitationFalloff: 2,
+            excitationFalloff: 1,
 
             probabilityFieldFunction: {
                 type: 'linear',
@@ -179,7 +189,12 @@
             },
 
             calculateExcitation: function(vegetation, wave, fingerprint) {
-                return wave.smoothedAmplitude;
+                var fftInfo = evaluateFft(
+                    wave.fft,
+                    0.3 + (fingerprint.a - fingerprint.b) * 0.1,
+                    0.7 + (fingerprint.c - fingerprint.b) * 0.15
+                );
+                return wave.smoothedAmplitude * fftInfo.max * 2;
             },
 
             growth: function(terrain, segment, fingerprint, currentDirection) {
@@ -260,7 +275,7 @@
             name: 'Lily Bush',
             radialGenerationAccuracy: 15,
             terrainAlignmentFactor: 1,
-            excitationFalloff: 2,
+            excitationFalloff: 4,
 
             probabilityFieldFunction: {
                 type: 'linear',
@@ -314,7 +329,7 @@
             name: 'Cradle Tree',
             radialGenerationAccuracy: 15,
             terrainAlignmentFactor: 1,
-            excitationFalloff: 2,
+            excitationFalloff: 5,
 
             probabilityFieldFunction: {
                 type: 'linear',
@@ -385,6 +400,38 @@
         //  Should never reach this point
         throw "Seeds.pick could not select seed";
     };
+
+    function evaluateFft(fft, minBin, maxBin) {
+        if (!fft || !fft.length) {
+            return {
+                min: 0, max: 0, average: 0
+            };
+        }
+
+        var range = Math.ceil(fft.length / 2);
+        minBin = Math.max(0, Math.floor(range * minBin));
+        maxBin = Math.min(fft.length-1, Math.floor(range * maxBin));
+
+        var result = {
+            max: -100000,
+            min: 10000,
+            average: 0
+        };
+
+        var i, fftValue;
+        for (i = minBin; i <= maxBin; i++) {
+            fftValue = fft[i] / 255;
+            result.average += fftValue;
+            if (fftValue > result.max)
+                result.max = fftValue;
+            if (fftValue < result.min)
+                result.min = fftValue;
+        }
+
+        result.average /= (maxBin - minBin) + 1;
+
+        return result;
+    }
 
 
 

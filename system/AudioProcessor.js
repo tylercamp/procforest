@@ -109,13 +109,13 @@
 
     AudioProcessor.prototype.calculateWaveData = function() {
         var result = {
-            fft: new Float32Array(this._analyser.fftSize),
+            fft: new Uint8Array(this._analyser.fftSize),
             wave: new Float32Array(this._analyser.fftSize),
             amplitude: null,
             smoothedAmplitude: null
         };
 
-        this._analyser.getFloatFrequencyData(result.fft);
+        this._analyser.getByteFrequencyData(result.fft);
         this._analyser.getFloatTimeDomainData(result.wave);
 
         result.smoothedAmplitude = this.calculateAverageAmplitude();
