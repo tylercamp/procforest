@@ -109,7 +109,7 @@
 
     AudioProcessor.prototype.calculateWaveData = function() {
         var result = {
-            fft: new Uint8Array(this._analyser.fftSize),
+            fft: new Uint8Array(this._analyser.frequencyBinCount),
             wave: new Float32Array(this._analyser.fftSize),
             amplitude: null,
             smoothedAmplitude: null

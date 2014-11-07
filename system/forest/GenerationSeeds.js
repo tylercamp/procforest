@@ -408,7 +408,7 @@
             };
         }
 
-        var range = Math.ceil(fft.length / 2);
+        var range = Math.ceil(fft.length);
         minBin = Math.max(0, Math.floor(range * minBin));
         maxBin = Math.min(fft.length-1, Math.floor(range * maxBin));
 
