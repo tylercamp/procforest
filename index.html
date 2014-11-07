@@ -195,32 +195,32 @@
             setLoadingStatus("Acquiring resources...");
 
             glHelper.pollResources(initApp, {
-                skyboxVertexShader: 'resources/shaders/skybox-vertex.glsl',
-                skyboxFragmentShader: 'resources/shaders/skybox-fragment.glsl',
+                skyboxVertexShader: 'resources/shaders/skybox-vertex.txt',
+                skyboxFragmentShader: 'resources/shaders/skybox-fragment.txt',
 
-                terrainVertexShader: 'resources/shaders/terrain-vertex.glsl',
-                terrainFragmentShader: 'resources/shaders/terrain-fragment.glsl',
+                terrainVertexShader: 'resources/shaders/terrain-vertex.txt',
+                terrainFragmentShader: 'resources/shaders/terrain-fragment.txt',
 
-                coloredGeomVertexShader: 'resources/shaders/coloredgeometry-vertex.glsl',
-                coloredGeomFragmentShader: 'resources/shaders/coloredgeometry-fragment.glsl',
-                particleFragmentShader: 'resources/shaders/particle-fragment.glsl',
-                particleVertexShader: 'resources/shaders/particle-vertex.glsl',
+                coloredGeomVertexShader: 'resources/shaders/coloredgeometry-vertex.txt',
+                coloredGeomFragmentShader: 'resources/shaders/coloredgeometry-fragment.txt',
+                particleFragmentShader: 'resources/shaders/particle-fragment.txt',
+                particleVertexShader: 'resources/shaders/particle-vertex.txt',
 
-                proceduralFragmentShader: 'resources/shaders/procedural-texture-fragment.glsl',
-                proceduralVertexShader: 'resources/shaders/procedural-texture-vertex.glsl',
+                proceduralFragmentShader: 'resources/shaders/procedural-texture-fragment.txt',
+                proceduralVertexShader: 'resources/shaders/procedural-texture-vertex.txt',
 
-                grassVertexShader: 'resources/shaders/grass-vertex.glsl',
-                grassFragmentShader: 'resources/shaders/grass-fragment.glsl',
+                grassVertexShader: 'resources/shaders/grass-vertex.txt',
+                grassFragmentShader: 'resources/shaders/grass-fragment.txt',
 
-                ppVertexShader: 'resources/shaders/postprocessing-vertex.glsl',
-                pp_Passthrough: 'resources/shaders/pp-passthrough.glsl',
+                ppVertexShader: 'resources/shaders/postprocessing-vertex.txt',
+                pp_Passthrough: 'resources/shaders/pp-passthrough.txt',
 
                 grassImage: "resources/grassgreentexture0005.jpg",
                 grassBillboardImage: "resources/b-grass02.png",
 
-                blur_HorizontalVertexShader: "resources/shaders/blur-h-vertex.glsl",
-                blur_VerticalVertexShader: "resources/shaders/blur-v-vertex.glsl",
-                blur_FragShader: "resources/shaders/blur-fragment.glsl",
+                blur_HorizontalVertexShader: "resources/shaders/blur-h-vertex.txt",
+                blur_VerticalVertexShader: "resources/shaders/blur-v-vertex.txt",
+                blur_FragShader: "resources/shaders/blur-fragment.txt",
 
 
                 //  Resources listed in order of skybox texture listing
@@ -315,15 +315,16 @@
                         initFunc: function() {
                             hideLoadingWindow();
                             Controllers.performance.beginMonitoring();
-                            //Controllers.audioPlaylist.play();
+                            Controllers.audioPlaylist.play();
 
-                            Controllers.keyboard.onKey(' ', function() {
-                                Controllers.forest.timeline.tick(5);
-                            });
+//                            Controllers.keyboard.onKey(' ', function() {
+//                                Controllers.forest.timeline.tick(5);
+//                            });
 
+                            //  Hide initially
+                            $('#debug-gui, #settings-gui').toggle();
                             Controllers.keyboard.onKey('H', function() {
-                                $('#debug-gui').toggle();
-                                $('#settings-gui').toggle();
+                                $('#debug-gui, #settings-gui').toggle();
                             });
 
                             runApp(gl, renderFunc, ProcForest.Settings, renderResources, 0);
@@ -376,7 +377,19 @@
 
                 var screenBuffer = Controllers.bufferSource.getBuffer(gl, screenWidth, screenHeight, "ScreenBuffer");
                 var emissiveBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight, "Emissive");
-                var bloomBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight, "Bloom");
+
+                var numBloomMaps = 2;
+                var bloomMaps = [];
+                var i, factor;
+                for (i = 0; i < numBloomMaps; i++) {
+                    factor = 1 / ((i + 1) * 2);
+                    bloomMaps.push(Controllers.bufferSource.getBuffer(gl, Math.ceil(bloomWidth * factor), Math.ceil(bloomHeight * factor), "Bloom" + i));
+                }
+
+                var emissiveMaps = [emissiveBuffer];
+                for (i = 1; i < numBloomMaps; i++) {
+                    emissiveMaps.push(Controllers.bufferSource.getBuffer(gl, Math.ceil(bloomWidth * factor), Math.ceil(bloomHeight * factor), "Emissive" + i));
+                }
 
 
                 //  Attempt to smooth amplitudes over ~100ms
@@ -418,24 +431,27 @@
                     }
 
                     { // Re-render the rasterized emissive components into a smaller framebuffer
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, emissiveBuffer.fbo);
-                        gl.viewport(0, 0, bloomWidth, bloomHeight);
+                        for (i = 0; i < numBloomMaps; i++) {
+                            gl.bindFramebuffer(gl.FRAMEBUFFER, emissiveMaps[i].fbo);
+                            gl.viewport(0, 0, emissiveMaps[i].width, emissiveMaps[i].height);
 
-                        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-                        Effect.TexturePassthrough.bind(gl, screenBuffer.renderTexture);
-                        FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params);
+                            Effect.TexturePassthrough.bind(gl, screenBuffer.renderTexture);
+                            FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params);
+                        }
                     }
 
                     { // Render blurred version of emissive components
                         gl.blendFunc(gl.ONE, gl.ONE);
-                        Effect.Blur.render(gl, bloomBuffer.fbo, bloomWidth, bloomHeight, emissiveBuffer.renderTexture, bloomWidth, bloomHeight, true);
+                        for (i = 0; i < numBloomMaps; i++) {
+                            Effect.Blur.render(gl, bloomMaps[i].fbo, bloomMaps[i].width, bloomMaps[i].height, emissiveMaps[i].renderTexture, bloomWidth, bloomHeight, true);
+                            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                            gl.viewport(0, 0, screenWidth, screenHeight);
 
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                        gl.viewport(0, 0, screenWidth, screenHeight);
-
-                        Effect.TexturePassthrough.bind(gl, bloomBuffer.renderTexture);
-                        FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params, { a: 1 });
+                            Effect.TexturePassthrough.bind(gl, bloomMaps[i].renderTexture);
+                            FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params, { a: 0.5 / numBloomMaps });
+                        }
 
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
                     }

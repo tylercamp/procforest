@@ -432,10 +432,10 @@
             if (keyboard.checkKey('D'))
                 camera.moveRight(moveSpeed);
 
-            if (keyboard.checkKey('X'))
-                cameraYOffset += moveSpeed / 4;
-            if (keyboard.checkKey('Z'))
-                cameraYOffset -= moveSpeed / 4;
+            //if (keyboard.checkKey('X'))
+            //    cameraYOffset += moveSpeed / 4;
+            //if (keyboard.checkKey('Z'))
+            //    cameraYOffset -= moveSpeed / 4;
 
             cameraYOffset = Math.clamp(cameraYOffset, cameraYOffsetBounds.min, cameraYOffsetBounds.max);
 
@@ -636,7 +636,7 @@
             var terrain = resources.currentTerrain;
 
             //  Spawn particles randomly over the terrain
-            var spawnsPerSecond = 700, spawnsThisFrame;
+            var spawnsPerSecond = 1400, spawnsThisFrame;
             var i, x, y, z, xnorm, znorm;
             spawnsThisFrame = Math.round(spawnsPerSecond * Controllers.time.getDelta());
             for (i = 0; i < spawnsThisFrame; i++) {
@@ -672,7 +672,7 @@
 
         RenderEmissive: function renderEmissiveElements(gl, resources) {
             this.RenderForest(gl, resources, true, 1);
-            this.RenderSkybox(gl, resources);
+            //this.RenderSkybox(gl, resources);
             this.RenderParticles(gl, resources);
             //this.RenderSpecialSquare(gl, resources);
         }
