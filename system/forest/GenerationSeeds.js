@@ -29,10 +29,10 @@
             },
 
             calculateExcitation: function(vegetation, wave, fingerprint) {
+                var responseBand = responseBands.pick(fingerprint.a * 0.5 + fingerprint.b * 0.5)
                 var fftInfo = evaluateFft(
                     wave.fft,
-                    0.02 + (fingerprint.a - fingerprint.b) * 0.005,
-                    0.1 + (fingerprint.c - fingerprint.b) * 0.25
+                    responseBand.min, responseBand.max
                 );
                 return wave.smoothedAmplitude * fftInfo.max * 2;
             },
@@ -92,10 +92,10 @@
             },
 
             calculateExcitation: function(vegetation, wave, fingerprint) {
+                var responseBand = responseBands.pick(fingerprint.a * 0.5 + fingerprint.b * 0.5)
                 var fftInfo = evaluateFft(
                     wave.fft,
-                    0.1 + (fingerprint.a - fingerprint.b) * 0.05,
-                    0.3 + (fingerprint.c - fingerprint.b) * 0.1
+                    responseBand.min, responseBand.max
                 );
                 return wave.smoothedAmplitude * fftInfo.max * 2;
             },
@@ -189,10 +189,10 @@
             },
 
             calculateExcitation: function(vegetation, wave, fingerprint) {
+                var responseBand = responseBands.pick(fingerprint.a * 0.5 + fingerprint.b * 0.5)
                 var fftInfo = evaluateFft(
                     wave.fft,
-                    0.3 + (fingerprint.a - fingerprint.b) * 0.1,
-                    0.7 + (fingerprint.c - fingerprint.b) * 0.15
+                    responseBand.min, responseBand.max
                 );
                 return wave.smoothedAmplitude * fftInfo.max * 2;
             },
@@ -399,6 +399,23 @@
 
         //  Should never reach this point
         throw "Seeds.pick could not select seed";
+    };
+
+
+
+
+    var numBands = 6;
+    var responseBands = [];
+    var i;
+    for (i = 0; i < numBands; i++) {
+        responseBands.push({
+            min: i / numBands * 0.7,
+            max: (i+1) / numBands * 0.7
+        });
+    }
+
+    responseBands.pick = function(normal) {
+        return this[Math.floor(normal * this.length)];
     };
 
     function evaluateFft(fft, minBin, maxBin) {

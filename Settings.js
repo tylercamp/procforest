@@ -21,7 +21,7 @@
         textureGenSeed: 0.125,
         textureVelocity: 0.4,
 
-        terrainSize: 400,
+        terrainSize: 300,
 
         frameSkip: 1,
         backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 },
@@ -30,7 +30,7 @@
         numGrassMeshes: 500000,
 
         Forest: {
-            maxSeedsDistance: 30
+            maxSeedsDistance: 50
         },
 
         SeedProbabilities: {
