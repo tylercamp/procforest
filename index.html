@@ -319,7 +319,28 @@
                     {
                         initText: 'Simulating forest growth',
                         initFunc: function() {
-                            ProgramFlow.GrowForest(gl, renderResources, ProcForest.Settings.numForestSimulationTicks);
+                            Controllers.forest.generate(ProcForest.Settings.numForestSimulationTicks, renderResources.currentTerrain);
+                        }
+                    },
+
+                    {
+                        initText: 'Generating forest meshes',
+                        initFunc: function() {
+                            Controllers.forest.vegetationObjects.forEach(function(vegetation) {
+                                vegetation.generateRenderMesh(gl, renderResources.currentTerrain);
+                            });
+                        }
+                    },
+
+                    {
+                        initText: 'Generating grass',
+                        initFunc: function() {
+                            console.log('generating grass');
+                            var i, remainingMeshes = ProcForest.Settings.numGrassMeshes, maxMeshesPerIteration = 5500;
+                            while (remainingMeshes > 0) {
+                                Controllers.forest.addGrass(gl, renderResources.currentTerrain, remainingMeshes % maxMeshesPerIteration, renderResources.grassBillboardImage);
+                                remainingMeshes -= maxMeshesPerIteration;
+                            }
                         }
                     },
 

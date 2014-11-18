@@ -375,19 +375,6 @@
             Controllers.camera.z = renderResources.currentTerrain.height() * renderResources.currentTerrain.scale.z * 0.55;
         },
 
-        GrowForest: function growForest(gl, renderResources, numTicks) {
-            Controllers.forest.generate(numTicks, renderResources.currentTerrain);
-            Controllers.forest.vegetationObjects.forEach(function(vegetation) {
-                vegetation.generateRenderMesh(gl, renderResources.currentTerrain);
-            });
-            console.log('generating grass');
-            var i, remainingMeshes = ProcForest.Settings.numGrassMeshes, maxMeshesPerIteration = 5500;
-            while (remainingMeshes > 0) {
-                Controllers.forest.addGrass(gl, renderResources.currentTerrain, remainingMeshes % maxMeshesPerIteration, renderResources.grassBillboardImage);
-                remainingMeshes -= maxMeshesPerIteration;
-            }
-        },
-
         UpdateUI: function updateUI(resources) {
             var camera = Controllers.camera;
 
