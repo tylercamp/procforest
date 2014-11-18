@@ -1,9 +1,12 @@
 precision mediump float;
 
 uniform sampler2D u_Texture0;
+uniform bool u_IsEmissive;
 
 varying vec2 v_TexCoord0;
 
 void main (void) {
     gl_FragColor = texture2D(u_Texture0, v_TexCoord0);
+    if (u_IsEmissive)
+        gl_FragColor = pow(gl_FragColor, vec4(5.0)) * 0.8; // Raise to a power to significantly reduce darker components
 }

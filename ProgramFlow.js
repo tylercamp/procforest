@@ -38,7 +38,8 @@
 
                     u_ModelViewMatrix: gl.getUniformLocation(this.skyboxShader, "u_ModelViewMatrix"),
                     u_ProjectionMatrix: gl.getUniformLocation(this.skyboxShader, "u_ProjectionMatrix"),
-                    u_Texture0: gl.getUniformLocation(this.skyboxShader, "u_Texture0")
+                    u_Texture0: gl.getUniformLocation(this.skyboxShader, "u_Texture0"),
+                    u_IsEmissive: gl.getUniformLocation(this.skyboxShader, "u_IsEmissive")
                 };
                 this.skyboxShaderParams.attribArrays = [
                     this.skyboxShaderParams.a_Vertex,
@@ -97,6 +98,9 @@
                     u_NoiseParameter: gl.getUniformLocation(this.proceduralShader, "u_NoiseParameter"),
                     u_IsEmissive: gl.getUniformLocation(this.proceduralShader, "u_IsEmissive"),
                     u_BrightnessFactor: gl.getUniformLocation(this.proceduralShader, "u_BrightnessFactor"),
+                    u_FogRange: gl.getUniformLocation(this.proceduralShader, "u_FogRange"),
+                    u_FogColor: gl.getUniformLocation(this.proceduralShader, "u_FogColor"),
+                    u_CameraPosition: gl.getUniformLocation(this.proceduralShader, "u_CameraPosition"),
 
                     u_ModelViewMatrix: gl.getUniformLocation(this.proceduralShader, "u_ModelViewMatrix"),
                     u_ProjectionMatrix: gl.getUniformLocation(this.proceduralShader, "u_ProjectionMatrix")
@@ -374,7 +378,7 @@
         GrowForest: function growForest(gl, renderResources, numTicks) {
             Controllers.forest.generate(numTicks, renderResources.currentTerrain);
             Controllers.forest.vegetationObjects.forEach(function(vegetation) {
-                vegetation._generateRenderMesh(gl, renderResources.currentTerrain);
+                vegetation.generateRenderMesh(gl, renderResources.currentTerrain);
             });
             console.log('generating grass');
             var i, remainingMeshes = ProcForest.Settings.numGrassMeshes, maxMeshesPerIteration = 5500;
@@ -508,9 +512,12 @@
             glHelper.disableAttribArrays(gl, shaderParams.attribArrays);
         },
 
-        RenderSkybox: function renderSkybox(gl, resources) {
+        RenderSkybox: function renderSkybox(gl, resources, isEmissive_) {
             if (!ProcForest.Settings.drawSkybox)
                 return;
+
+            if (isEmissive_ === undefined)
+                isEmissive_ = false;
 
             //  Normal generation isn't right, don't care enough to do this correctly
             gl.disable(gl.CULL_FACE);
@@ -525,6 +532,7 @@
             skyboxModelview.rotate(Controllers.camera.rotation.y, 0, 1, 0);
             gl.uniformMatrix4fv(shaderParams.u_ModelViewMatrix, false, skyboxModelview.elements);
             gl.uniformMatrix4fv(shaderParams.u_ProjectionMatrix, false, resources.projectionMatrix.elements);
+            gl.uniform1i(shaderParams.u_IsEmissive, isEmissive_);
 
             var skybox = resources.skybox;
             var renderdata = skybox.getRenderingBuffers();
@@ -586,12 +594,23 @@
 
             gl.uniform1f(shaderParams.u_NoiseParameter, ProcForest.Settings.textureGenSeed);
             gl.uniform1i(shaderParams.u_IsEmissive, isEmissive || false);
+            gl.uniform2f(shaderParams.u_FogRange, ProcForest.Settings.fogRange.min, ProcForest.Settings.fogRange.max);
+            gl.uniform4f(shaderParams.u_FogColor,
+                ProcForest.Settings.fogColor.r, ProcForest.Settings.fogColor.g,
+                ProcForest.Settings.fogColor.b, ProcForest.Settings.fogColor.a
+            );
+            gl.uniform3f(shaderParams.u_CameraPosition, Controllers.camera.x, Controllers.camera.y, Controllers.camera.z);
 
             glHelper.enableAttribArrays(gl, shaderParams.attribArrays);
 
-            var i, vegetationObject;
+            var i, vegetationObject, vegetationPosition, cameraPosition, distance;
+            cameraPosition = { x: Controllers.camera.x, y: Controllers.camera.y, z: Controllers.camera.z };
             for (i = 0; i < forest.vegetationObjects.length; i++) {
                 vegetationObject = forest.vegetationObjects[i];
+                vegetationPosition = vegetationObject.position();
+                distance = Math.magnitude(Math.vecDifference(cameraPosition, vegetationPosition));
+                if (distance > ProcForest.Settings.maxTreeViewDist)
+                    continue;
                 //vegetationObject.drawStructure(gl, shaderParams, false);
                 if (isEmissive)
                     gl.uniform1f(shaderParams.u_BrightnessFactor, vegetationObject.getExcitation());
@@ -682,10 +701,9 @@
         },
 
         RenderEmissive: function renderEmissiveElements(gl, resources) {
-            this.RenderForest(gl, resources, true, 1);
-            //this.RenderSkybox(gl, resources);
+            this.RenderForest(gl, resources, true, 0.05);
+            this.RenderSkybox(gl, resources, true);
             this.RenderParticles(gl, resources);
-            //this.RenderSpecialSquare(gl, resources);
         }
     };
 

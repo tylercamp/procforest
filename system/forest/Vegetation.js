@@ -119,11 +119,11 @@
 
     Vegetation.prototype.position = function() {
         var result = null;
-        if (this.structureSegments.length) {
-            if (this.structureSegments[0].structure.length) {
-                result = this.structureSegments[0].structure[0];
-            }
+    if (this.structureSegments.length) {
+        if (this.structureSegments[0].structure.length) {
+            result = this.structureSegments[0].structure[0];
         }
+    }
 
         if (result) {
             //  Make copy
@@ -142,11 +142,11 @@
     };
 
     Vegetation.prototype.draw = function(gl, shaderParams, fittingTerrain, autoAttribArrays_) {
-        if (this.structureSegments[0].structure.length <= 1)
+        if (!this.isFrozen && this.structureSegments[0].structure.length <= 1)
             return;
 
         if (!this._renderMesh || this._needsBuild) {
-            this._generateRenderMesh(gl, fittingTerrain);
+            this.generateRenderMesh(gl, fittingTerrain);
         }
 
         if (autoAttribArrays_ === undefined)
@@ -178,7 +178,7 @@
         }
     };
 
-    Vegetation.prototype._generateRenderMesh = function(gl, fittingTerrain) {
+    Vegetation.prototype.generateRenderMesh = function(gl, fittingTerrain) {
         var meshData = VegetationMeshBuilder.instance.buildMeshForVegetation(this, fittingTerrain);
         var colors = [];
 
@@ -209,7 +209,7 @@
         this._needsBuild = false;
     };
 
-    Vegetation.prototype._generateStructureMesh = function(gl) {
+    Vegetation.prototype.generateStructureMesh = function(gl) {
         var vertices, colors, i, j, currentSegment, currentVertex, nextVertex;
 
         vertices = [];
@@ -256,7 +256,9 @@
     };
 
     Vegetation.prototype.excite = function excite(wave) {
-        var excitation = this.seed.calculateExcitation(this, wave, this.fingerprint);
+        //  Random resistance equation for now
+        var excitationResistance = this.fingerprint.a * this.fingerprint.b * this.fingerprint.c;
+        var excitation = this.seed.calculateExcitation(this, wave, this.fingerprint) * excitationResistance;
         if (excitation > this._excitation)
             this._excitation = excitation;
     };
@@ -345,7 +347,7 @@
     //  For debugging
     Vegetation.prototype.drawStructure = function(gl, shaderParams, autoAttribArrays_) {
         if (!this._structureMesh || this._needsBuild)
-            this._generateStructureMesh(gl);
+            this.generateStructureMesh(gl);
 
         if (autoAttribArrays_ === undefined)
             autoAttribArrays_ = true;

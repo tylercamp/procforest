@@ -338,14 +338,14 @@
                                 });
                             });
 
-                            Controllers.audioPlaylist.play();
+                            //Controllers.audioPlaylist.play();
 
 //                            Controllers.keyboard.onKey(' ', function() {
 //                                Controllers.forest.timeline.tick(5);
 //                            });
 
                             //  Hide initially
-                            $('#debug-gui, #settings-gui').toggle();
+                            //$('#debug-gui, #settings-gui').toggle();
                             Controllers.keyboard.onKey('H', function() {
                                 $('#debug-gui, #settings-gui').toggle();
                             });
@@ -395,22 +395,19 @@
 
 
                 var screenWidth = resources.screen.width, screenHeight = resources.screen.height;
-                var bloomSizeFactor = 1 / 2;
+                var bloomSizeFactor = 1;
                 var bloomWidth = Math.ceil(screenWidth * bloomSizeFactor), bloomHeight = Math.ceil(screenHeight * bloomSizeFactor);
 
                 var screenBuffer = Controllers.bufferSource.getBuffer(gl, screenWidth, screenHeight, "ScreenBuffer");
                 var emissiveBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight, "Emissive");
 
-                var numBloomMaps = 2;
+                var numBloomMaps = 5;
                 var bloomMaps = [];
+                var emissiveMaps = [emissiveBuffer];
                 var i, factor;
                 for (i = 0; i < numBloomMaps; i++) {
-                    factor = 1 / ((i + 1) * 2);
+                    factor = 1 / Math.pow(2, i);
                     bloomMaps.push(Controllers.bufferSource.getBuffer(gl, Math.ceil(bloomWidth * factor), Math.ceil(bloomHeight * factor), "Bloom" + i));
-                }
-
-                var emissiveMaps = [emissiveBuffer];
-                for (i = 1; i < numBloomMaps; i++) {
                     emissiveMaps.push(Controllers.bufferSource.getBuffer(gl, Math.ceil(bloomWidth * factor), Math.ceil(bloomHeight * factor), "Emissive" + i));
                 }
 
@@ -468,12 +465,16 @@
                     { // Render blurred version of emissive components
                         gl.blendFunc(gl.ONE, gl.ONE);
                         for (i = 0; i < numBloomMaps; i++) {
-                            Effect.Blur.render(gl, bloomMaps[i].fbo, bloomMaps[i].width, bloomMaps[i].height, emissiveMaps[i].renderTexture, bloomWidth, bloomHeight, true);
+                            Effect.Blur.render(gl,
+                                    bloomMaps[i].fbo, bloomMaps[i].width, bloomMaps[i].height,
+                                    emissiveMaps[i].renderTexture, emissiveMaps[i].width, emissiveMaps[i].height,
+                                    true);
+                            //Effect.Blur.render(gl, null, screenWidth, screenHeight, emissiveMaps[i].renderTexture, bloomWidth, bloomHeight, true);
                             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                             gl.viewport(0, 0, screenWidth, screenHeight);
 
                             Effect.TexturePassthrough.bind(gl, bloomMaps[i].renderTexture);
-                            FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params, { a: 0.5 / numBloomMaps });
+                            FullscreenQuad.instance.render(gl, Effect.TexturePassthrough.params, { a: 3 / numBloomMaps });
                         }
 
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);

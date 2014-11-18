@@ -21,16 +21,20 @@
         textureGenSeed: 0.125,
         textureVelocity: 0.4,
 
-        terrainSize: 300,
+        terrainSize: 400,
 
-        frameSkip: 1,
+        frameSkip: 0,
         backgroundColor: { r: 0.0, g: 0.0, b: 0.0, a: 0 },
+        fogColor: { r: 0.1, g: 0.1, b: 0.1, a: 0 },
+        fogRange: { min: 60, max: 100 },
         numForestSimulationTicks: 10,
+        maxTreeViewDist: 110,
 
-        numGrassMeshes: 500000,
+        //numGrassMeshes: 0,
+        numGrassMeshes: 200000,
 
         Forest: {
-            maxSeedsDistance: 50
+            maxSeedsDistance: 15
         },
 
         SeedProbabilities: {

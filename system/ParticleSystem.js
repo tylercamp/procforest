@@ -7,32 +7,32 @@
 
     "use strict";
 
-    function createArrayFromVectors(arrayOfVectors, lifetimes) {
-        var result = [], i, vector;
+    function fillArrayFromVectors(arrayOfVectors, lifetimes, targetArray) {
+        var numInserted = 0, i, vector;
         for (i = 0; i < arrayOfVectors.length; i++) {
             if (lifetimes[i] > 0) {
                 vector = arrayOfVectors[i];
-                result.push(vector.elements[0]);
-                result.push(vector.elements[1]);
-                result.push(vector.elements[2]);
+                targetArray[numInserted * 3 + 0] = vector.elements[0];
+                targetArray[numInserted * 3 + 1] = vector.elements[1];
+                targetArray[numInserted * 3 + 2] = vector.elements[2];
+
+                ++numInserted;
             }
         }
-
-        return new Float32Array(result);
     }
 
-    function filterColors(arrayOfColors, lifetimes) {
-        var result = [], i;
+    function fillArrayFromFilteredColors(arrayOfColors, lifetimes, targetArray) {
+        var i, numInserted = 0;
         for (i = 0; i < lifetimes.length; i++) {
             if (lifetimes[i] > 0) {
-                result.push(arrayOfColors[i*4 + 0]);
-                result.push(arrayOfColors[i*4 + 1]);
-                result.push(arrayOfColors[i*4 + 2]);
-                result.push(arrayOfColors[i*4 + 3]);
+                targetArray[numInserted*4 + 0] = arrayOfColors[i * 4 + 0];
+                targetArray[numInserted*4 + 1] = arrayOfColors[i * 4 + 1];
+                targetArray[numInserted*4 + 2] = arrayOfColors[i * 4 + 2];
+                targetArray[numInserted*4 + 3] = arrayOfColors[i * 4 + 3];
+
+                ++numInserted;
             }
         }
-
-        return new Float32Array(result);
     }
 
     function ParticleSystem(gl) {
@@ -47,6 +47,11 @@
         this.posZ = 20;
         this.activeParticles = 0;
         this.particleColors = [];
+
+        //  Rather than create a new buffer every time we render, pre-allocate the buffers and re-fill them
+        //      when we render
+        this._particlePositionsBuffer = new Float32Array(this.maxParticles * 3);
+        this._particleColorsBuffer = new Float32Array(this.maxParticles * 4);
 
         this._vertexBuffer = gl.createBuffer();
         this._colorBuffer = gl.createBuffer();
@@ -139,18 +144,18 @@
 
     ParticleSystem.prototype.draw = function(gl, a_Vertex, a_Color) {
         /*CONVERT*/
-        var particleVerts = createArrayFromVectors(this.particleArray, this.lifeTimes);
-        var particleColor = filterColors(this.particleColors, this.lifeTimes);
+        fillArrayFromVectors(this.particleArray, this.lifeTimes, this._particlePositionsBuffer);
+        fillArrayFromFilteredColors(this.particleColors, this.lifeTimes, this._particleColorsBuffer);
 
         // Bind the buffer object to target
         gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
         // Write date into the buffer object
-        gl.bufferData(gl.ARRAY_BUFFER, particleVerts, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, this._particlePositionsBuffer, gl.DYNAMIC_DRAW);
         // Assign the buffer object to a_Vertex variable
         gl.vertexAttribPointer(a_Vertex, 3, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this._colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, particleColor, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, this._particleColorsBuffer, gl.DYNAMIC_DRAW);
         gl.vertexAttribPointer(a_Color, 4, gl.FLOAT, false, 0, 0);
 
         gl.drawArrays(gl.POINTS, 0, this.activeParticles);

@@ -405,12 +405,15 @@
 
 
     var numBands = 6;
+    var bandPadding = 0.6 / numBands;
+    var masterBand = [0, 0.9]; // subsets of masterBand
     var responseBands = [];
-    var i;
+    var i, bandWidth;
+    bandWidth = (1 - bandPadding*(numBands-1)) / numBands;
     for (i = 0; i < numBands; i++) {
         responseBands.push({
-            min: i / numBands * 0.7,
-            max: (i+1) / numBands * 0.7
+            min: ((bandPadding + bandWidth) * i) * (masterBand[1] - masterBand[0]) + masterBand[0],
+            max: ((bandPadding + bandWidth) * i + bandWidth) * (masterBand[1] - masterBand[0]) + masterBand[0]
         });
     }
 

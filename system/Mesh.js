@@ -8,6 +8,8 @@
 
     function buildBuffer(gl, buffer, bufferData) {
         buffer = buffer || gl.createBuffer();
+        if (!buffer)
+            console.warn('gl.createBuffer failed');
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         gl.bufferData(gl.ARRAY_BUFFER, bufferData, gl.STATIC_DRAW);
 

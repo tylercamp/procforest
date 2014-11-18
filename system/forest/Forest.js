@@ -69,6 +69,7 @@
         this.probabilityFields = null;
         this.grassRenderers = [];
         this.registerNewOffspring = true;
+        this.isFrozen = false;
 
         this.defaultProbabilityFunction = {
             type: 'no-op'
@@ -138,6 +139,11 @@
         var probabilityFields = this.probabilityFields;
         //  Configure timeline onTick
         this.timeline.onTick(function (tick) {
+            if (self.isFrozen) {
+                console.log('Forest cannot be grown after it has been frozen.');
+                return;
+            }
+
             //  Don't insert offspring until we're done processing
             var newVegetation = [];
 
