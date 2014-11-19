@@ -121,6 +121,7 @@
     <script src="system/forest/MeshHelper.js"></script>
     <script src="system/forest/ProbabilityField.js"></script>
     <script src="system/forest/GrassRenderer.js"></script>
+    <script src="system/forest/GrassManager.js"></script>
     <script src="system/Mesh.js"></script>
     <script src="system/ParticleSystem.js"></script>
     <script src="system/AudioProcessor.js"></script>
@@ -336,11 +337,7 @@
                         initText: 'Generating grass',
                         initFunc: function() {
                             console.log('generating grass');
-                            var i, remainingMeshes = ProcForest.Settings.numGrassMeshes, maxMeshesPerIteration = 5500;
-                            while (remainingMeshes > 0) {
-                                Controllers.forest.addGrass(gl, renderResources.currentTerrain, remainingMeshes % maxMeshesPerIteration, renderResources.grassBillboardImage);
-                                remainingMeshes -= maxMeshesPerIteration;
-                            }
+                            Controllers.grass.generate(gl, renderResources.currentTerrain, renderResources.grassBillboardImage);
                         }
                     },
 
@@ -416,13 +413,13 @@
 
 
                 var screenWidth = resources.screen.width, screenHeight = resources.screen.height;
-                var bloomSizeFactor = 1;
+                var bloomSizeFactor = 0.5;
                 var bloomWidth = Math.ceil(screenWidth * bloomSizeFactor), bloomHeight = Math.ceil(screenHeight * bloomSizeFactor);
 
                 var screenBuffer = Controllers.bufferSource.getBuffer(gl, screenWidth, screenHeight, "ScreenBuffer");
                 var emissiveBuffer = Controllers.bufferSource.getBuffer(gl, bloomWidth, bloomHeight, "Emissive");
 
-                var numBloomMaps = 5;
+                var numBloomMaps = 3;
                 var bloomMaps = [];
                 var emissiveMaps = [emissiveBuffer];
                 var i, factor;

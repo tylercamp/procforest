@@ -6,6 +6,10 @@
 
     "use strict";
 
+    //  Memory optimization, used during mesh generation
+    var sharedVertices = null;
+    var sharedTexCoords = null;
+
     function appendVec3ToArray(array, vector) {
         array.push(vector.x);
         array.push(vector.y);
@@ -17,15 +21,15 @@
         array.push(vector.y);
     }
 
+    var sharedRotMatrix = new Matrix4();
     function generateGrassPlane(verticesArray, texCoordsArray, position, normal, width, height, rotationDegrees) {
         var perp = Math.perpVector(normal);
-        var rotMatrix = new Matrix4();
 
         perp = new Vector4([perp.x, perp.y, perp.z, 1]);
-        rotMatrix.setRotate(rotationDegrees, normal.x, normal.y, normal.z);
+        sharedRotMatrix.setRotate(rotationDegrees, normal.x, normal.y, normal.z);
 
         var bl, br, tl, tr;
-        bl = rotMatrix.multiplyVector4(perp);
+        bl = sharedRotMatrix.multiplyVector4(perp);
 
         bl = { x: bl.elements[0], y: bl.elements[1], z: bl.elements[2] };
         br = { x: -bl.x, y: -bl.y, z: -bl.z };
@@ -64,7 +68,7 @@
         appendVec2ToArray(texCoordsArray, trc);
     }
     
-    function GrassRenderer() {
+    function GrassRenderer(position, size) {
         this.mesh = new Mesh();
 
         this._meshWidth = 1;
@@ -74,7 +78,18 @@
         this._heightVariance = this._meshHeight / 2;
 
         this._count = 0;
+
+        this._position = position;
+        this._size = size;
     }
+
+    GrassRenderer.prototype.getPosition = function() {
+        return this._position;
+    };
+
+    GrassRenderer.prototype.getSize = function() {
+        return this._size;
+    };
 
     GrassRenderer.prototype.maxMeshes = function() {
         return 5460; // Only for 2x-plane-per-mesh configuration
@@ -98,31 +113,35 @@
         //  Max of 5,460 grass instances (buffer size limit)
         this._count = Math.min(this.maxMeshes(), count);
 
-        var vertices = [];
-        var texCoords = [];
+        sharedVertices = [];
+        sharedTexCoords = [];
+
         var i, rotation, normal, width, height, position = {};
 
         for (i = 0; i < this._count; i++) {
-            position.x = Math.random() * terrain.renderWidth();
-            position.z = Math.random() * terrain.renderHeight();
+            position.x = Math.random() * this._size.x + this._position.x;
+            position.z = Math.random() * this._size.y + this._position.y;
             position.y = terrain.getValue(position.x, position.z);
             rotation = Math.random() * 360;
             normal = terrain.getNormal(position.x, position.z);
             width = this._meshWidth + (Math.random() * 2 - 1) * this._widthVariance;
             height = this._meshHeight + (Math.random() * 2 - 1) * this._heightVariance;
-            generateGrassPlane(vertices, texCoords, position, normal, width, height, rotation);
-            generateGrassPlane(vertices, texCoords, position, normal, width, height, rotation + 90);
+            generateGrassPlane(sharedVertices, sharedTexCoords, position, normal, width, height, rotation);
+            generateGrassPlane(sharedVertices, sharedTexCoords, position, normal, width, height, rotation + 90);
         }
 
         this.mesh.setVertices({
-            data: vertices
+            data: sharedVertices
         });
 
         this.mesh.setTexUnitCoords({
-            data: texCoords
+            data: sharedTexCoords
         });
 
         this.mesh.build(gl);
+
+        sharedVertices = null;
+        sharedTexCoords = null;
     };
 
     GrassRenderer.prototype.draw = function(gl, shaderParams, autoAttribArrays_) {

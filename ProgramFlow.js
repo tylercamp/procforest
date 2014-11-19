@@ -117,6 +117,9 @@
                     a_TexCoord0: gl.getAttribLocation(this.grassShader, "a_TexCoord0"),
 
                     u_Diffuse: gl.getUniformLocation(this.grassShader, "u_Diffuse"),
+                    u_CameraPosition: gl.getUniformLocation(this.grassShader, "u_CameraPosition"),
+                    u_FogColor: gl.getUniformLocation(this.grassShader, "u_FogColor"),
+                    u_FogRange: gl.getUniformLocation(this.grassShader, "u_FogRange"),
 
                     u_ModelViewMatrix: gl.getUniformLocation(this.grassShader, "u_ModelViewMatrix"),
                     u_ProjectionMatrix: gl.getUniformLocation(this.grassShader, "u_ProjectionMatrix")
@@ -170,6 +173,7 @@
             Controllers.time = new TimeController();
             Controllers.performance = new PerformanceMonitor(gl);
             Controllers.forest = new Forest();
+            Controllers.grass = new GrassManager(ProcForest.Settings.grassPatchSize, ProcForest.Settings.grassPatchDensity);
             Controllers.particleSystem = new ParticleSystem(gl);
             Controllers.audioProcessor = new AudioProcessor();
             Controllers.audioPlaylist = new AudioPlaylist(Controllers.audioProcessor);
@@ -610,10 +614,9 @@
         },
 
         RenderGrass: function renderGrass(gl, resources) {
-            var i, forest;
+            var i;
             var shader = resources.grassShader;
             var shaderParams = resources.grassShaderParams;
-            forest = Controllers.forest;
 
             gl.useProgram(shader);
 
@@ -621,10 +624,20 @@
 
             gl.uniformMatrix4fv(shaderParams.u_ModelViewMatrix, false, resources.modelViewMatrix.elements);
             gl.uniformMatrix4fv(shaderParams.u_ProjectionMatrix, false, resources.projectionMatrix.elements);
+            gl.uniform3f(shaderParams.u_CameraPosition, Controllers.camera.x, Controllers.camera.y, Controllers.camera.z);
+            var settings = ProcForest.Settings;
+            gl.uniform2f(shaderParams.u_FogRange, settings.grassFogRange.min, settings.grassFogRange.max);
+            gl.uniform4f(shaderParams.u_FogColor, settings.fogColor.r, settings.fogColor.g, settings.fogColor.b, settings.fogColor.a);
 
-            var grassRenderer;
-            for (i = 0; i < forest.grassRenderers.length; i++) {
-                grassRenderer = forest.grassRenderers[i];
+            var grassRenderer, visibleRenderers, cameraPos;
+            cameraPos = {
+                x: Controllers.camera.x,
+                y: Controllers.camera.y,
+                z: Controllers.camera.z
+            };
+            visibleRenderers = Controllers.grass.getVisiblePatches(cameraPos, ProcForest.Settings.maxGrassViewDist);
+            for (i = 0; i < visibleRenderers.length; i++) {
+                grassRenderer = visibleRenderers[i];
                 grassRenderer.draw(gl, shaderParams);
             }
 

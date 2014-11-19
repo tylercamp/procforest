@@ -50,7 +50,7 @@
     window.Effect = window.Effect || {};
     
     Effect.Blur = {
-        sampleStride: 1,
+        sampleStride: 2,
         intensityRamp: 1.5,
         intensityFactor: 1.5,
 

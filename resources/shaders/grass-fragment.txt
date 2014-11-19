@@ -2,8 +2,11 @@
 precision mediump float;
 
 uniform sampler2D u_Diffuse;
+uniform vec4 u_FogColor;
+uniform vec2 u_FogRange;
 
 varying vec2 v_TexCoord0;
+varying float v_Distance;
 
 vec3 desaturate(vec3 color, float amount)
 {
@@ -19,4 +22,7 @@ void main(void) {
     gl_FragColor.rgb *= vec3(0.22, 0.23, 0.22) * 0.4;
     gl_FragColor.rgb = desaturate(gl_FragColor.rgb, 0.4);
     gl_FragColor.a = pow(gl_FragColor.a, 3.0);
+
+    float fogFactor = clamp((u_FogRange.y - v_Distance) / (u_FogRange.y - u_FogRange.x), 0.0, 1.0);
+    gl_FragColor = mix(u_FogColor, gl_FragColor, fogFactor);
 }
